@@ -38,7 +38,6 @@ class MycontactsController extends AbstractController
     /**
      * @Route("/personnes/ajout", name="app_personnes_ajout")
      * @Route("/personnes/edit/{id<[0-9+]>}", name="app_personnes_edit")
-     * @Route("/personnes/del/{id<[0-9+]>}", name="app_personnes_del")
      */
     public function personneForm(?int $id,PersonneRepository $personneRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -88,16 +87,17 @@ class MycontactsController extends AbstractController
         ]);
     }
 
-        /**
+    /**
      * @Route("/societes/ajout", name="app_societes_ajout")
-     * @Route("/societes/{id<[0-9+]>}/edit", name="app_societes_edit")
+     * @Route("/societes/{id<[0-9+]>}/edit", name="app_societes_edit", methods={"GET", "PUT"})
      */
-    public function societeForm(?int $id,SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
+    public function societeForm(?Societe $societe,SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
     {
-        $societe = new Societe();
+        /*$societe = new Societe();
         if (isset($id)) {
             $societe = $societeRepo->find($id);
-        }
+        }*/
+
         $form = $this->createFormBuilder($societe)      
             ->add('imageLogo', VichImageType::class, [
                 'required' => false,
@@ -148,12 +148,27 @@ class MycontactsController extends AbstractController
     }
 
     /**
+     * @Route("/personnes/del/{id<[0-9+]>}", name="app_personnes_del", methods ="DELETE")
+     */
+    public function personneDelete(Personne $personne, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('personne_supprime_' . $personne->getId(), $requete->request->get('csrf_token'))) {
+            $em->remove($personne);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_mycontacts');
+    }
+
+    /**
      * @Route("/societes/{id<[0-9+]>}/del", name="app_societes_del", methods ="DELETE")
      */
     public function societeDelete(Societe $societe, Request $requete, EntityManagerInterface $em): Response
     {
-        $em->remove($societe);
-        $em->flush();
+        if ($this->isCsrfTokenValid('societe_supprime_' . $societe->getId(), $requete->request->get('csrf_token'))) {
+            $em->remove($societe);
+            $em->flush();
+        }
 
         return $this->redirectToRoute('app_mycontacts');
     }

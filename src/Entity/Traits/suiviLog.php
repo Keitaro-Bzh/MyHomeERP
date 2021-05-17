@@ -75,4 +75,18 @@ trait suiviLog
         return $this;
     }
 
+    /** 
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function majLog() {
+        if ($this->getdateCreation() == null) {
+            $this->setdateCreation(new \DateTimeImmutable());
+            //$this->setIdCreationn($this->getUser()->getId());
+        }
+
+        $this->setDateModification(new \DateTimeImmutable());
+        //$this->setIdModification($this->getUser()->getId());
+    }
+
 }

@@ -44,9 +44,13 @@
                                                 <td>{{ personne.prenom|e }}</td>
                                                 <td>{{ personne.dateNaissance|date('d-m-Y') }}</td>
                                                 <td><a href="mailto:{{ personne.email|e }}">{{ personne.email|e }}</a></td>
-                                                <td class="actions">
+                                                <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_personnes_edit', { 'id' : personne.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="{{ path('app_personnes_del', { 'id' : personne.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-personne-effacer-{{personne.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                                    <form id="js-personne-effacer-{{personne.id}}"  action="{{ path('app_personnes_del', { 'id' : personne.id }) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('personne_supprime_' ~ personne.id) }}">
+                                                        <input type="hidden" name="_method" value="DELETE">
+                                                    </form>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -79,12 +83,16 @@
                                                 <td>{{ societe.telephone|e }}</td>
                                                 <td>{{ societe.email }}</td>
                                                 <td><a href="{{ societe.url|e }}" target="_blank">{{ societe.url|e }}</a></td>
-                                                <td class="actions">
+                                                <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_societes_edit', { 'id' : societe.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="{{ path('app_societes_del', { 'id' : societe.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-societe-effacer-{{societe.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                                    <form id="js-societe-effacer-{{societe.id}}"  action="{{ path('app_societes_del', { 'id' : societe.id }) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('societe_supprime_' ~ societe.id) }}">
+                                                        <input type="hidden" name="_method" value="DELETE">
+                                                    </form>
                                                 </td>
                                             </tr>
-                                        {% endfor %}
+                                    {% endfor %}
                                     </tbody>
                                 </table>
                             {% else %}
@@ -98,4 +106,6 @@
             </div>
         </div>
     </section>
+
+
 {% endblock %}

@@ -38,7 +38,7 @@ class Personne
     private $prenom;
 
     /**
-     * @ORM\Column(type="string", length=15)
+     * @ORM\Column(type="string", length=15, nullable=true)
      */
     private $telephone;
 
