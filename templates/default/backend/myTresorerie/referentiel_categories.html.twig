@@ -1,0 +1,35 @@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="mb-md text-right">
+                
+            </div>
+        </div>
+    </div>
+    {% if categories|length > 0 %}
+        <div class="col-md-12 text-right">
+            <a href="{{ path('app_myTresorerie_referentiel_sous_categorie_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-info"><i class="fa fa-plus" aria-hidden="true"></i> SOUS-CATEGORIE</button></a>
+        </div>
+        <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+            <thead>
+                <tr>
+                    <th>Categorie</th>
+                    <th class="col-md-1 text-center">Options</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for categorie in categories %}
+                    <tr>
+                        <td>{{ categorie.nom }}</td>
+                        <td class="actions text-center">
+                            <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : categorie.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                            <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-success">
+            Aucune catégorie n'a été enregistrée pour le moment.
+        </div>
+    {% endif %}

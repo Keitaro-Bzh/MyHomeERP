@@ -1,0 +1,21 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}EN CONSTRUCTION{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">Merci de revenir plus tard</h2>
+        </header>
+        <div class="panel-body text-center">
+            <img src="{{ asset('assets/images/construction.jpg') }}" width="800">
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}MYERP{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <div class="mb-md">
+                    <a href="{{ path('app_index') }}"><button class="btn btn-danger btn-sm"><i class="fa fa-key"></i> MODIFIER MOT DE PASSE</button></a>
+                    <a href="#"><button class="btn btn-warning btn-sm"><i class="fa fa-rotate-left"></i> ANNULER</button></a>
+                </div>
+            </div>
+
+            <h2 class="panel-title">PROFIL</h2>
+            <p class="panel-subtitle">Formulaire de saisie</p>
+        </header>
+
+        <div class="panel-body">
+            {{ form_start(form)}}
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <section class="panel">
+                            <header class="panel-heading">
+                                <h2 class="panel-title">Identité</h2>
+                                <div class="panel-actions">
+                                    <div class="form-group">
+                                        <label> Statut </label>
+                                        {{ form_widget(form.estActif) }}
+                                    </div>
+                                </div>
+                            </header>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"> Nom d'utilisateur</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-envelope"></i>
+                                            </span>
+                                            {{ form_widget(form.email) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"> Identité</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            {{ form_widget(form.personne) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 text-right">
+                                    <button class="btn btn-success btn-sm"><i class="fa fa-check"></i> VALIDER</button>
+                                </div>
+                            </div>
+                        </section>
+                        
+                    </div>
+                </div>
+            {{ form_end(form)}}
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block footer_script %}{% endblock %}

@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="col-sm-12">
+        <div class="mb-md text-right">
+            
+        </div>
+    </div>
+</div>
+{% if modesPaiement|length > 0 %}
+    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+        <thead>
+            <tr>
+                <th>Modes de paiement</th>
+                <th class="col-md-1 text-center">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for modePaiement in modesPaiement %}
+                <tr>
+                    <td>{{ modePaiement.nom }}</td>
+                    <td class="actions text-center">
+                        <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : modePaiement.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                        <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-success">
+        Aucun mode de paiement n'a été enregistré pour le moment.
+    </div>
+{% endif %}

@@ -1,0 +1,62 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+        
+            <div class="panel-actions">
+                <a href="{{ path('app_myTresorerie_referentiel_banque_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> BANQUE</button></a>
+                <a href="{{ path('app_myTresorerie_referentiel_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> COMPTE</button></a>
+                <a href="{{ path('app_myTresorerie_referentiel_categorie_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> CATEGORIE</button></a>
+                <a href="{{ path('app_myTresorerie_referentiel_type_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> TYPE COMPTE</button></a>
+                <a href="{{ path('app_construction') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> MODE PAIMENT</button></a>
+            </div>
+
+            <h2 class="panel-title">PARAMETRAGE DES REFERENTIELS</h2>
+        </header>
+        <div class="panel-body">
+        
+            <div class="tabs">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#banques" data-toggle="tab"><i class="fa fa-bank"></i> Banques</a>
+                    </li>
+                    <li>
+                        <a href="#comptes" data-toggle="tab"><i class="fa fa-suitcase"></i> Comptes</a>
+                    </li>    
+                    <li>
+                        <a href="#categories" data-toggle="tab"><i class="fa fa-folder-open"></i> Categories</a>
+                    </li>
+                    <li>
+                        <a href="#typeCompte" data-toggle="tab"><i class="fa fa-bar-chart-o"></i> Types de compte</a>
+                    </li>
+                    <li>
+                        <a href="#modePaiement" data-toggle="tab"><i class="fa fa-credit-card"></i> Modes de Paiement</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="banques" class="tab-pane active">
+                        <p>{% include 'default/backend/myTresorerie/referentiel_banques.html.twig' %}</p>
+                    </div>
+                    <div id="comptes" class="tab-pane">
+                        <p>{% include 'default/backend/myTresorerie/referentiel_comptes.html.twig' %}</p>
+                    </div>
+                    <div id="categories" class="tab-pane">
+                        <p>{% include 'default/backend/myTresorerie/referentiel_categories.html.twig' %}</p>
+                    </div>
+                    <div id="typeCompte" class="tab-pane">
+                        <p>{% include 'default/backend/myTresorerie/referentiel_typeCompte.html.twig' %}</p>
+                    </div>
+                    <div id="modePaiement" class="tab-pane">
+                        <p>{% include 'default/backend/myTresorerie/referentiel_modePaiement.html.twig' %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

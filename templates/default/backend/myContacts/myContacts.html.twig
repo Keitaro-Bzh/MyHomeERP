@@ -1,0 +1,101 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}CONTACTS{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <a href="{{ path('app_personnes_ajout') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> PERSONNE</button></a>
+                <a href="{{ path('app_societes_ajout') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> SOCIETE</button></a>
+            </div>
+
+            <h2 class="panel-title">CARNET D'ADRESSES</h2>
+        </header>
+
+        <div class="panel-body">
+            <div class="tabs">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#personnes" data-toggle="tab"><i class="fa fa-user"></i> Personnes</a>
+                    </li>
+                    <li>
+                        <a href="#societes" data-toggle="tab"><i class="fa fa-institution"></i> Sociétés</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="personnes" class="tab-pane active">
+                        <p>
+                            {% if tablePersonnes|length > 0 %}
+                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Prénom</th>
+                                            <th>Date de naissance</th>
+                                            <th>Email</th>
+                                            <th>Options</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for personne in tablePersonnes %}
+                                            <tr>
+                                                <td>{{ personne.nom|e }}</td>
+                                                <td>{{ personne.prenom|e }}</td>
+                                                <td>{{ personne.dateNaissance|date('d-m-Y') }}</td>
+                                                <td><a href="mailto:{{ personne.email|e }}">{{ personne.email|e }}</a></td>
+                                                <td class="actions">
+                                                    <a href="{{ path('app_personnes_edit', { 'id' : personne.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                                    <a href="{{ path('app_personnes_del', { 'id' : personne.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    Aucune personne n'a été enregistrée pour le moment.
+                                </div>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div id="societes" class="tab-pane">
+                        <p>
+                            {% if tableSocietes|length > 0 %}
+                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Téléphone</th>
+                                            <th>Email</th>
+                                            <th>URL</th>
+                                            <th>Options</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for societe in tableSocietes %}
+                                            <tr>
+                                                <td>{{ societe.nom|e }}</td>
+                                                <td>{{ societe.telephone|e }}</td>
+                                                <td>{{ societe.email }}</td>
+                                                <td><a href="{{ societe.url|e }}" target="_blank">{{ societe.url|e }}</a></td>
+                                                <td class="actions">
+                                                    <a href="{{ path('app_societes_edit', { 'id' : societe.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                                    <a href="{{ path('app_societes_del', { 'id' : societe.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    Aucune société n'a été enregistrée pour le moment.
+                                </div>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

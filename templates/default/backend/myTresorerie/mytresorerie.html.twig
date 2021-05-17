@@ -1,0 +1,209 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">LISTE DES COMPTES</h2>
+            <div class="panel-actions">
+                <a href="{{ path('app_myTresorerie_operation') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-credit-card" aria-hidden="true"></i> OPERATION</button></a>
+                <a href="{{ path('app_myTresorerie_virement') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-refresh" aria-hidden="true"></i> VIREMENT</button></a>
+                <a href="{{ path('app_myTresorerie_retrait') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
+            </div>
+        </header>
+        <div class="panel-body">
+            <div class="col-md-12">
+                <div class="col-md-12">
+                    <section class="panel">
+                        <div class="panel-body">
+                            <section class="panel">
+                                <h3 class="panel-title">Comptes Courants</h3>
+                                <div class="panel-body">
+                                    <div class="col-lg-4 col-sm-6">
+                                        <section class="panel panel-featured panel-featured-primary">
+                                            <header class="panel-heading">
+                                                <h5><a href="{{ path('app_myTresorerie_compte') }}">COMPTE CHEQUE</a></h5>
+                                                <p class="panel-subtitle">CREDIT AGRICOLE</p>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-none">
+                                                        <thead>
+                                                            <th></th>
+                                                            <th>SOLDE</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Pointé</td>
+                                                                <td>1200 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Réel</td>
+                                                                <td>980 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Atterrissage</td>
+                                                                <td>-300 €</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6">
+                                        <section class="panel panel-featured panel-featured-primary">
+                                            <header class="panel-heading">
+                                                <h5><a href="#">COMPTE JOINT</a></h5>
+                                                <p class="panel-subtitle">BOURSORAMA</p>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-none">
+                                                        <thead>
+                                                            <th></th>
+                                                            <th>SOLDE</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Pointé</td>
+                                                                <td>1200 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Réel</td>
+                                                                <td>980 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Atterrissage</td>
+                                                                <td>-300 €</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6">
+                                        <section class="panel panel-featured panel-featured-primary">
+                                            <header class="panel-heading">
+                                                <h5><a href="#">BOURSORAMA ESSENTIEL</a></h5>
+                                                <p class="panel-subtitle">BOURSORAMA</p>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-none">
+                                                        <thead>
+                                                            <th></th>
+                                                            <th>SOLDE</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Pointé</td>
+                                                                <td>1200 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Réel</td>
+                                                                <td>980 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Atterrissage</td>
+                                                                <td>-300 €</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="panel-body">
+                            <section class="panel">
+                                <h3 class="panel-title">Comptes d'Epargne</h3>
+                                <div class="panel-body">
+                                    <div class="col-lg-4 col-sm-6">
+                                        <section class="panel panel-featured panel-featured-default">
+                                            <header class="panel-heading">
+                                                <h5><a href="#">LIVRET A</a></h5>
+                                                <p class="panel-subtitle">BOURSORAMA</p>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-none">
+                                                        <thead>
+                                                            <th></th>
+                                                            <th>SOLDE</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Pointé</td>
+                                                                <td>1200 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Réel</td>
+                                                                <td>980 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Atterrissage</td>
+                                                                <td>-300 €</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6">
+                                        <section class="panel panel-featured panel-featured-default">
+                                            <header class="panel-heading">
+                                                <h5><a href="#">LIVRET A</a></h5>
+                                                <p class="panel-subtitle">BOURSORAMA</p>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-none">
+                                                        <thead>
+                                                            <th></th>
+                                                            <th>SOLDE</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Pointé</td>
+                                                                <td>1200 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Réel</td>
+                                                                <td>980 €</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Atterrissage</td>
+                                                                <td>-300 €</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </section>
+                </div>
+                <div class="col-md-8">
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

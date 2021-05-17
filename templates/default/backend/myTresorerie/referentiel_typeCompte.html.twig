@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="col-sm-12">
+        <div class="mb-md text-right">
+            
+        </div>
+    </div>
+</div>
+{% if typesCompte|length > 0 %}
+    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+        <thead>
+            <tr>
+                <th>Types de Compte</th>
+                <th class="col-md-1 text-center">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for typeCompte in typesCompte %}
+                <tr>
+                    <td>{{ typeCompte.nom }}</td>
+                    <td class="actions text-center">
+                        <a href="{{ path('app_myTresorerie_referentiel_type_compte_edit', { 'id' : typeCompte.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                        <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-success">
+        Aucun type de Compte n'a été enregistré pour le moment.
+    </div>
+{% endif %}

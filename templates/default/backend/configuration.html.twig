@@ -1,0 +1,62 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}CONFIGURATION{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">Paramétrage du site</h2>
+        </header>
+        <div class="panel-body">
+            <div class="tabs">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#utilisateurs" data-toggle="tab"><i class="fa fa-user"></i> Utilisateurs</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="utilisateurs" class="tab-pane active">
+                        <div class="text-right">
+                            <a href="{{ path("app_configuration_utilisateur_add") }}" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> AJOUT</a>
+                        </div>
+                        <p>
+                            {% if tableUsers|length > 0 %}
+                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Options</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for user in tableUsers %}
+                                            <tr>
+                                                <td><a href="mailto:{{ user.email|e }}">{{ user.email|e }}</a></td>
+                                                <td class="actions">
+                                                    <a href="{{ path('app_configuration_utilisateur_edit', { 'id' : user.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                                    <a href="{{ path('app_configuration_utilisateur_del', { 'id' : user.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                                                    
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    Aucun utilisateur n'a été enregistrée pour le moment.
+                                </div>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}
