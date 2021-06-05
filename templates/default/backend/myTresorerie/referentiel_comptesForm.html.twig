@@ -34,11 +34,15 @@
                         <div class="col-md-6">
                             {{ form_widget(form.typeCompte)}}
                         </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('app_myTresorerie_referentiel_type_compte_add') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="col-md-3 control-label">Libellé</label>
                         <div class="col-md-6">
                             {{ form_widget(form.libelle)}}
+                            <span class="text-danger">{{ form_errors(form.libelle)}}</span>
                         </div>
                     </div>
                     <div class="form-group">
@@ -69,6 +73,7 @@
                         <label class="col-md-3 control-label">Solde Initial</label>
                         <div class="col-md-6">
                             {{ form_widget(form.soldeInitial)}}
+                            <span class="text-danger">{{ form_errors(form.soldeInitial)}}</span>
                         </div>
                     </div>   
                     <div class="col-md-9 text-right">

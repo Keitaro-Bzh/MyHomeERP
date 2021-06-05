@@ -9,3 +9,9 @@ liip_imagine:
                 relative_resize:
                     widen: 250
                     upscale: false
+
+        personne_image_photo  :
+            filters:
+                relative_resize:
+                    widen: 250
+                    upscale: false

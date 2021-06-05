@@ -16,6 +16,7 @@ use App\Entity\Traits\suiviLog;
 
 class Categorie
 {
+    use suiviLog;
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

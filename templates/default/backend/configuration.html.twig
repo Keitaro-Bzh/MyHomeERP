@@ -14,45 +14,52 @@
             <h2 class="panel-title">Paramétrage du site</h2>
         </header>
         <div class="panel-body">
-            <div class="tabs">
-                <ul class="nav nav-tabs">
-                    <li class="active">
-                        <a href="#utilisateurs" data-toggle="tab"><i class="fa fa-user"></i> Utilisateurs</a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div id="utilisateurs" class="tab-pane active">
-                        <div class="text-right">
-                            <a href="{{ path("app_configuration_utilisateur_add") }}" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> AJOUT</a>
-                        </div>
-                        <p>
-                            {% if tableUsers|length > 0 %}
-                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
-                                    <thead>
-                                        <tr>
-                                            <th>Email</th>
-                                            <th>Options</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for user in tableUsers %}
+            <div class="col-md-8 col-md-offset-2">
+                <div class="tabs">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#utilisateurs" data-toggle="tab"><i class="fa fa-user"></i> Utilisateurs</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="utilisateurs" class="tab-pane active">
+                            <div class="text-right">
+                                <a href="{{ path("app_configuration_utilisateur_add") }}" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> AJOUT</a>
+                            </div>
+                            <p>
+                                {% if tableUsers|length > 0 %}
+                                    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                        <thead>
                                             <tr>
-                                                <td><a href="mailto:{{ user.email|e }}">{{ user.email|e }}</a></td>
-                                                <td class="actions">
-                                                    <a href="{{ path('app_configuration_utilisateur_edit', { 'id' : user.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="{{ path('app_configuration_utilisateur_del', { 'id' : user.id }) }}" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
-                                                    
-                                                </td>
+                                                <th>Email</th>
+                                                <th class="col-md-3 text-center">Date création</th>
+                                                <th>Options</th>
                                             </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            {% else %}
-                                <div class="alert alert-info">
-                                    Aucun utilisateur n'a été enregistrée pour le moment.
-                                </div>
-                            {% endif %}
-                        </p>
+                                        </thead>
+                                        <tbody>
+                                        {% for user in tableUsers %}
+                                                <tr>
+                                                    <td><a href="mailto:{{ user.email|e }}">{{ user.email|e }}</a></td>
+                                                    <td class="col-md-3 text-center">{{ user.dateCreation|format_date(locale='fr') }}</td>
+                                                    <td class="actions col-md-1 text-center">
+                                                        <a href="{{ path('app_configuration_utilisateur_edit', { 'id' : user.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-user-supprimer-{{user.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                                        <form id="js-user-supprimer-{{user.id}}"  action="{{ path('app_configuration_utilisateur_del', { 'id' : user.id }) }}" method="post" style="display:none;">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('user_supprime_' ~ user.id) }}">
+                                                            <input type="hidden" name="_method" value="DELETE">
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        Aucun utilisateur n'a été enregistrée pour le moment.
+                                    </div>
+                                {% endif %}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

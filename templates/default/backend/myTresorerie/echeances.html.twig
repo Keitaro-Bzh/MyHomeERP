@@ -1,0 +1,158 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">LISTE DES ECHEANCES</h2>
+            <div class="panel-actions">
+                <a href="{{ path('app_myTresorerie_echeance_debit_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
+                <a href="{{ path ('app_myTresorerie_echeance_credit_add')}}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
+                <a href="{{ path('app_myTresorerie_echeance_virement_add')}}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
+            </div>
+        </header>
+        <div class="panel-body">
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            <div class="col-md-10 col-md-offset-1 alert alert-info text-justify" role="alert">
+                <p>
+                    L'ajout d'une échéance correspond à un paiement multiple ou des opérations récurrentes à intervalles régulières.<br />
+                    Pour les échéances correspondant à des prêts bancaires, ou des abonnements, merci d'utiliser les liens ci-dessous.<br />
+                    Les échéances correspondantes seront créées automatiquement.
+                </p>
+                <p class="text-center">
+                    <a href="{{ path('app_myContrats_contrat_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-info"><i class="fa fa-plus" aria-hidden="true"></i> CONTRAT</button></a>
+                    <a href="{{ path('app_myTresorerie_credit_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-info"><i class="fa fa-plus" aria-hidden="true"></i> PRET BANCAIRE</button></a>
+                </p>
+            </div>
+            <div class="col-md-12">
+                {% if echeances|length > 0 %}
+                    <h5>DEBITS/CREDITS</h5>
+                    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                        <thead>
+                            <tr>
+                                
+                                <th>Compte</th>
+                                <th>Tiers</th>
+                                <th class="col-md-1 text-center">Date souscription</th>
+                                <th class="col-md-1 text-center">Montant Total</th>
+                                <th class="col-md-1 text-center">Nombre écheances</th>
+                                <th class="col-md-1 text-center">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for echeance in echeances %}
+                            {% if echeance.typeOperation != 'VII' %}
+                                <tr>
+                                    <td class="col-md-4">
+                                        [{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}
+                                        <div class="text-muted">
+                                            {{ echeance.compte.titulaire.nom|upper }} {{ echeance.compte.titulaire.prenom }}
+                                            {% if (echeance.compte.coTitulaire) %}
+                                             / {{ echeance.compte.coTitulaire.nom|upper }} {{ echeance.compte.coTitulaire.prenom }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if (echeance.tiersSociete) %}
+                                            {{ echeance.tiersSociete.nom }}
+                                        {% elseif (echeance.tiersPersonne) %}
+                                            {{ echeance.tiersPersonne.nom }}
+                                        {% else %}
+                                            {{ echeance.tiersLibelle }}
+                                        {% endif %}
+                                        <div class="text-muted">
+                                            {{ echeance.description }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d-m-Y') }}</td>
+                                    <td class="text-right  {% if echeance.typeOperation ==  'DEB' %}text-danger{% endif %}{% if echeance.typeOperation ==  'CRE' %}text-success{% endif %}">
+                                       
+                                             {{ echeance.montantTotal }} €
+                                    </td>
+                                    <td class="text-center">
+                                        {% if echeance.nombreEcheances == 0 %}
+                                            <i class="fa fa-circle-o-notch"></i>
+                                        {% else %}
+                                            {{ echeance.nombreEcheances }}x
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-echeance-effacer-{{echeance.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                        <form id="js-echeance-effacer-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_del', { 'id' : echeance.id }) }}" method="post" style="display:none;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_supprime_' ~ echeance.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <br />
+                    <h5>VIREMENTS INTERNES</h5>
+                    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                        <thead>
+                            <tr>
+                                
+                                <th>Compte source</th>
+                                <th>Compte cible</th>
+                                <th class="col-md-1 text-center">Date</th>
+                                <th class="col-md-1 text-center">Montant</th>
+                                <th class="col-md-1 text-center">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for echeance in echeances %}
+                            {% if echeance.typeOperation == 'VII' %}
+                                <tr>
+                                    <td>
+                                        [{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}
+                                        <div class="text-muted">
+                                            {{ echeance.compte.titulaire.nom|upper }} {{ echeance.compte.titulaire.prenom }}
+                                            {% if (echeance.compte.coTitulaire) %}
+                                             / {{ echeance.compte.coTitulaire.nom|upper }} {{ echeance.compte.coTitulaire.prenom }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        [{{ echeance.compteDestinataireVirement.banque.societe.nom|upper }}] {{ echeance.compteDestinataireVirement.libelle }}
+                                        <div class="text-muted">
+                                            {{ echeance.compteDestinataireVirement.titulaire.nom|upper }} {{ echeance.compteDestinataireVirement.titulaire.prenom }}
+                                            {% if (echeance.compteDestinataireVirement.coTitulaire) %}
+                                             / {{ echeance.compteDestinataireVirement.coTitulaire.nom|upper }} {{ echeance.compteDestinataireVirement.coTitulaire.prenom }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d-m') }}</td>
+                                    <td class="text-right">{{ echeance.montantTotal }} €</td>
+                                    <td class="text-center">
+                                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-echeance-effacer-{{echeance.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                        <form id="js-echeance-effacer-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_del', { 'id' : echeance.id }) }}" method="post" style="display:none;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_supprime_' ~ echeance.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-success">
+                        Aucune échéance n'est enregistrée
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

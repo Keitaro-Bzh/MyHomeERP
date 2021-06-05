@@ -28,7 +28,7 @@
                             </header>
                             <div class="panel-body">
                                 <div class="photo">
-                                    <img src="{{ asset('assets/images/avatar.png') }}" alt="avatar">
+                                    {{ form_widget(form.imagePhoto)}}
                                 </div>
                             </div>
                         </section>
@@ -85,7 +85,6 @@
                                             <span class="input-group-addon">
                                                 <i class="fa fa-calendar"></i>
                                             </span>
-                                            {# <input type="text" data-plugin-datepicker value="{{ personne.dateNaissance|date('d-m-Y') }}" class="form-control"> #}
                                             {{ form_widget(form.dateNaissance)}}
                                         </div>
                                     </div>
@@ -110,4 +109,12 @@
     <script src="{{ asset('assets/vendor/codemirror/lib/codemirror.js') }}"></script>  
     <script src="{{ asset('assets/vendor/bootstrap-maxlength/bootstrap-maxlength.js') }}"></script>
     <script src="{{ asset('assets/vendor/ios7-switch/ios7-switch.js') }}"></script>
+    </script>
+        $(document).ready(function() {
+        // you may need to change this code if you are not using Bootstrap Datepicker
+        $('.js-datepicker').datepicker({
+            format: 'yyyy-mm-dd'
+        });
+    });
+    </script>
 {% endblock %}

@@ -2,8 +2,10 @@
 
 namespace App\Entity\MyContacts;
 
+use App\Entity\MyFinances\Echeance;
 use App\Entity\MyFinances\Compte;
 use App\Entity\MyFinances\ModePaiement;
+use App\Entity\MyFinances\Operation;
 use App\Repository\MyContacts\PersonneRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,9 +19,11 @@ use App\Entity\Traits\suiviLog;
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
  * @ORM\Table(name= "mycontacts_personnes")
  * @ORM\HasLifecycleCallbacks
+ * @Vich\Uploadable
  */
 class Personne
 {
+    use suiviLog;
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -59,12 +63,12 @@ class Personne
     private $estActif;
 
     /**
-     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="titulaire")
+     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="titulaire", orphanRemoval=true)
      */
     private $titulaire;
 
     /**
-     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="cotitulaire")
+     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="cotitulaire", orphanRemoval=true)
      */
     private $coTitulaire;
 
@@ -73,11 +77,35 @@ class Personne
      */
     private $modePaiements;
 
+    /**
+     * @Vich\UploadableField(mapping="personnes_photos", fileNameProperty="photo")
+     * @Assert\Image(maxSize="1M")
+     * @var File|null
+     */
+    private $imagePhoto;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $photo;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Operation::class, mappedBy="Personne")
+     */
+    private $operations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Echeance::class, mappedBy="tiers_personne")
+     */
+    private $echeances;
+
     public function __construct()
     {
         $this->titulaire = new ArrayCollection();
         $this->coTitulaire = new ArrayCollection();
         $this->modePaiements = new ArrayCollection();
+        $this->operations = new ArrayCollection();
+        $this->echeances = new ArrayCollection();
     }
     
     public function getId(): ?int
@@ -105,6 +133,43 @@ class Personne
     public function setPrenom(string $prenom): self
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+        /**
+     * If manually uploading a file (i.e. not using Symfony Form) ensure an instance
+     * of 'UploadedFile' is injected into this setter to trigger the  update. If this
+     * bundle's configuration parameter 'inject_on_load' is set to 'true' this setter
+     * must be able to accept an instance of 'File' as the bundle will inject one here
+     * during Doctrine hydration.
+     *
+     * @param File|UploadedFile|null $imagePhoto
+     */
+    public function setImagePhoto(?File $imagePhoto = null)
+    {
+        $this->imagePhoto = $imagePhoto;
+
+        if (null !== $imagePhoto) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->setDateModification(new \DateTimeImmutable());
+        }
+    }
+
+    public function getImagePhoto(): ?File
+    {
+        return $this->imagePhoto;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): self
+    {
+        $this->photo = $photo;
 
         return $this;
     }
@@ -216,4 +281,65 @@ class Personne
 
         return $this;
     }
+
+    /**
+     * @return Collection|Operation[]
+     */
+    public function getOperations(): Collection
+    {
+        return $this->operations;
+    }
+
+    public function addOperation(Operation $operation): self
+    {
+        if (!$this->operations->contains($operation)) {
+            $this->operations[] = $operation;
+            $operation->setPersonne($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperation(Operation $operation): self
+    {
+        if ($this->operations->removeElement($operation)) {
+            // set the owning side to null (unless already changed)
+            if ($operation->getPersonne() === $this) {
+                $operation->setPersonne(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(Echeance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setTiersPersonne($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(Echeance $echeance): self
+    {
+        if ($this->echeances->removeElement($echeance)) {
+            // set the owning side to null (unless already changed)
+            if ($echeance->getTiersPersonne() === $this) {
+                $echeance->setTiersPersonne(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

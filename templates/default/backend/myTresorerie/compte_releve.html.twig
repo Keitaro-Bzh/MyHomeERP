@@ -1,0 +1,59 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">[{{ compte.banque.societe.nom|upper }}] {{ compte.libelle }}</h2>
+            <p class="panel-subtitle">TITULAIRE{% if compte.Cotitulaire %}S{% endif %} : {{ compte.titulaire.nom }} {{ compte.titulaire.prenom }} {% if compte.Cotitulaire %} - {{ compte.Cotitulaire.nom }} {{ compte.Cotitulaire.prenom }}{% endif %}</p>
+            <div class="panel-actions">
+               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> RETOUR</button></a>
+                
+            </div>
+        </header>
+        <div class="panel-body">
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-info" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            {% for flashMSG in app.flashes('successMSG') %}
+                <div class="alert alert-info" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            <div class="col-md-10">
+                <div class="tabs">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#operations" data-toggle="tab"><i class="fa fa-spinner"></i> Operations non rapprochées</a>
+                        </li>
+                        <li>
+                            <a href="#echeances" data-toggle="tab"><i class="fa fa-tachometer"></i> Echéances du mois</a>
+                        </li>
+                        <li>
+                            <a href="#releves" data-toggle="tab"><i class="fa fa-tasks"></i> Relevé de comptes</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="operations" class="tab-pane active">
+                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsNonRapprochees} %}
+                        </div>
+                        <div id="echeances" class="tab-pane">
+                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsEcheancesFuturs} %}
+                        </div>
+                        <div id="releves" class="tab-pane">
+                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsRapprochees} %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 text-center">  
+                <a href="{{ path('app_myTresorerie_operation_debit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
+                <a href="{{ path('app_myTresorerie_operation_credit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
+                <a href="{{ path('app_myTresorerie_virement') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
+                <a href="{{ path('app_myTresorerie_retrait') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

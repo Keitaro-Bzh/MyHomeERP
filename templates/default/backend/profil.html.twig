@@ -7,7 +7,7 @@
         <header class="panel-heading">
             <div class="panel-actions">
                 <div class="mb-md">
-                    <a href="#"><button class="btn btn-danger btn-sm"><i class="fa fa-key"></i> MODIFIER MOT DE PASSE</button></a>
+                    <a href="{{ path('app_configuration_password_reset') }}"><button class="btn btn-danger btn-sm"><i class="fa fa-key"></i> MODIFIER MOT DE PASSE</button></a>
                     <a href="{{ path('app_index') }}"><button class="btn btn-warning btn-sm"><i class="fa fa-rotate-left"></i> ANNULER</button></a>
                 </div>
             </div>
@@ -17,37 +17,55 @@
         </header>
 
         <div class="panel-body">
+            {% for flashError in app.flashes('errorUpdate') %}
+                <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+            {% endfor %}        
+            {% for flashError in app.flashes('userUpdate') %}
+                <div class="alert alert-success" role="alert">{{ flashError }}</div>
+            {% endfor %}
             {{ form_start(form)}}
                 <div class="row">
-                    <div class="col-md-6 col-md-offset-3">
+                    <div class="col-md-4">
+                        <section class="panel">
+                            <header class="panel-heading">
+                                <div class="panel-actions">
+                                    <a href="#" id="form_imageAvatar_file" class="fa fa-search"></a>
+                                </div>
+                                <h2 class="panel-title">Avatar</h2>
+                            </header>
+                            <div class="panel-body">
+                                <div class="photo">
+                                    {# form_widget(form.imageAvatar) #}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-md-8">
                         <section class="panel">
                             <header class="panel-heading">
                                 <h2 class="panel-title">Identité</h2>
-                                <div class="panel-actions">
-                                    <div class="form-group">
-                                        <label> Statut </label>
-                                        {{ form_widget(form.estActif) }}
-                                    </div>
-                                </div>
                             </header>
                             <div class="panel-body">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label"> Nom d'utilisateur</label>
+                                    <label class="col-sm-4 control-label"> Email</label>
                                     <div class="col-sm-8">
-                                        <div class="input-group">
-                                            <span class="input-group-addon">
-                                                <i class="fa fa-envelope"></i>
-                                            </span>
-                                            {{ form_widget(form.email) }}
-                                        </div>
+                                        {{ form_widget(form.email) }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Pseudo</label>
+                                    <div class="col-sm-8">
+                                        {{ form_widget(form.pseudo)}}
+                                        <span class="text-danger">{{ form_errors(form.pseudo) }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label"> Identité</label>
-                                    <div class="col-sm-8">
-                                        <div class="input-group">
-                                            {{ form_widget(form.personne) }}
-                                        </div>
+                                    <div class="col-sm-7">
+                                        {{ form_widget(form.personneID) }}
+                                    </div>
+                                    <div class="col-sm-1">
+                                        <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i></a>
                                     </div>
                                 </div>
                                 <div class="col-md-12 text-right">

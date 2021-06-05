@@ -17,7 +17,7 @@ class PersonneChoiceType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $Personnes = array();
-        $Personnes['--- Sélectionnez une personne ---'] = '';
+        $Personnes["--- Sélectionnez une personne ---"] = '-1';
         foreach($this->PersonnesList as $Personne) {
             $Personnes[$Personne->getNom() . ' ' . $Personne->getPrenom()] = $Personne->getId();
         }

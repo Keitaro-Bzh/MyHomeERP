@@ -21,9 +21,21 @@
             {{ form_start(form)}}
                 <div class="col-md-10 col-md-offset-2">
                     <div class="form-group">
-                        <label class="col-md-3 control-label">Categorie</label>
+                        <label class="col-md-3 control-label">Catégorie</label>
                         <div class="col-md-6">
-                            {{ form_widget(form.nom)}}
+                            {{ form_widget(form.ModePaiement)}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Compte</label>
+                        <div class="col-md-6">
+                            {{ form_widget(form.compteID)}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Titulaire</label>
+                        <div class="col-md-6">
+                            {{ form_widget(form.titulaireID)}}
                         </div>
                     </div> 
                     <div class="col-md-9 text-right">

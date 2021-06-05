@@ -2,6 +2,9 @@
 
 namespace App\Entity\MyContacts;
 
+use App\Entity\MyContrats\Contrat;
+use App\Entity\MyFinances\Echeance;
+use App\Entity\MyFinances\Operation;
 use App\Repository\MyContacts\SocieteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -69,6 +72,28 @@ class Societe
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $estBanque;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Operation::class, mappedBy="Societe")
+     */
+    private $operations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Echeance::class, mappedBy="tiers_societe")
+     */
+    private $echeances;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Contrat::class, mappedBy="Societe", orphanRemoval=true)
+     */
+    private $societes_contrats;
+
+    public function __construct()
+    {
+        $this->operations = new ArrayCollection();
+        $this->echeances = new ArrayCollection();
+        $this->societes_contrats = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -180,6 +205,96 @@ class Societe
     public function setEstBanque(?bool $estBanque): self
     {
         $this->estBanque = $estBanque;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Operation[]
+     */
+    public function getOperations(): Collection
+    {
+        return $this->operations;
+    }
+
+    public function addOperation(Operation $operation): self
+    {
+        if (!$this->operations->contains($operation)) {
+            $this->operations[] = $operation;
+            $operation->setSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperation(Operation $operation): self
+    {
+        if ($this->operations->removeElement($operation)) {
+            // set the owning side to null (unless already changed)
+            if ($operation->getSociete() === $this) {
+                $operation->setSociete(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(Echeance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setTiersSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(Echeance $echeance): self
+    {
+        if ($this->echeances->removeElement($echeance)) {
+            // set the owning side to null (unless already changed)
+            if ($echeance->getTiersSociete() === $this) {
+                $echeance->setTiersSociete(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Contrat[]
+     */
+    public function getSocietesContrats(): Collection
+    {
+        return $this->societes_contrats;
+    }
+
+    public function addSocietesContrat(Contrat $societesContrat): self
+    {
+        if (!$this->societes_contrats->contains($societesContrat)) {
+            $this->societes_contrats[] = $societesContrat;
+            $societesContrat->setSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSocietesContrat(Contrat $societesContrat): self
+    {
+        if ($this->societes_contrats->removeElement($societesContrat)) {
+            // set the owning side to null (unless already changed)
+            if ($societesContrat->getSociete() === $this) {
+                $societesContrat->setSociete(null);
+            }
+        }
 
         return $this;
     }

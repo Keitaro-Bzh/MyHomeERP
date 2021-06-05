@@ -1,0 +1,116 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">OPERATION BANCAIRE [DEBIT]</h2>
+            <p class="panel-subtitle">Formulaire de saisie </p>
+            <div class="panel-actions">
+               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button></a>
+            </div>
+        </header>
+        <div class="panel-body">
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            <div class="col-md-12 col-sm-offset-1">
+                {{ form_start(form)}}
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DATE</label>
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                {{ form_widget(form.date) }}
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-right">
+                        RAPPROCHE <div class="switch switch-sm switch-success">{{ form_widget(form.est_pointe)}}</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">COMPTE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.compteID)}}
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('app_myTresorerie_referentiel_compte_add') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">MODE DE PAIEMENT</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.modePaiementID)}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">NUMERO CHEQUE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.numeroCheque)}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">TYPE DE TIERS</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.typeTiers) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">TIERS</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.tiers_libelle) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">TIERS</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.societeID) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">TIERS</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.personneID) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DESCRIPTION</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.description) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">CATEGORIE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.categorieID) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">MONTANT</label>
+                        <div class="col-md-5">
+                            <div class="input-group input-group-icon">
+                                {{ form_widget(form.debit) }}
+                                <span class="input-group-addon">
+                                    <span class="icon"><i class="fa fa-euro"></i></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>          
+                    <div class="col-md-7 text-right">
+                        <input type="submit" class="btn btn-sm btn-success" value="VALIDER" />
+                    </div>
+                {{ form_end(form)}}
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

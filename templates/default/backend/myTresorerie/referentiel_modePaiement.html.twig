@@ -16,7 +16,7 @@
         <tbody>
         {% for modePaiement in modesPaiement %}
                 <tr>
-                    <td>{{ modePaiement.nom }}</td>
+                    <td>{{ modePaiement.modePaiement }}</td>
                     <td class="actions text-center">
                         <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : modePaiement.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
                         <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>

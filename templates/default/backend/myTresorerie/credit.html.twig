@@ -1,0 +1,63 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">LISTE DES PRETS BANCAIRES</h2>
+            <div class="panel-actions">
+               <a href="{{ path('app_myTresorerie_credit_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> AJOUTER</button></a>
+            </div>
+        </header>
+        <div class="panel-body">
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            <div class="col-md-10 col-sm-offset-1">
+                {% if credits|length > 0 %}
+                    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Compte</th>
+                                <th>Montant</th>
+                                <th>Durée (M)</th>
+                                <th class="col-md-1 text-center">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for credit in credits %}
+                                <tr>
+                                    <td>{{ credit.dateSignature|date('d/m/y') }}</td>
+                                    <td>[{{ credit.compte.banque.societe.nom|upper }}] {{ credit.compte.libelle }}</td>
+                                    <td>{{ credit.montant }} €</td>
+                                    <td>{{ credit.duree }}</td>
+                                    <td class="actions text-center">
+                                        <a href="{{ path('app_myTresorerie_credit_edit', { 'id' : credit.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-credit-effacer-{{credit.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                        <form id="js-credit-effacer-{{credit.id}}"  action="{{ path('app_myTresorerie_credit_del', { 'id' : credit.id }) }}" method="post" style="display:none;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('credit_supprime_' ~ credit.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-success">
+                        Aucun prêt bancaire n'a été souscrit
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

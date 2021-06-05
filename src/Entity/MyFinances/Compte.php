@@ -2,6 +2,8 @@
 
 namespace App\Entity\MyFinances;
 
+use App\Entity\MyContrats\ContratFacturation;
+use App\Entity\MyFinances\Echeance;
 use App\Entity\MyContacts\Personne;
 use App\Entity\MyFinances\Banque;
 use App\Repository\MyFinances\CompteRepository;
@@ -10,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\suiviLog;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=CompteRepository::class)
@@ -34,22 +37,25 @@ class Compte
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\NotNull(message="Le libellé du compte est obligatoire")
      */
     private $numero;
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\NotNull(message="Vous devez saisir un montant même nul")
      */
     private $soldeInitial;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Banque::class, inversedBy="Banque")
+     * @ORM\ManyToOne(targetEntity=Banque::class, inversedBy="comptes")
      * @ORM\JoinColumn(nullable=false)
      */
     private $banque;
 
     /**
      * @ORM\Column(type="string", length=5)
+     * @ORM\JoinColumn(nullable=false)
      */
     private $typeCompte;
 
@@ -69,9 +75,39 @@ class Compte
      */
     private $modePaiements;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Operation::class, mappedBy="Compte", orphanRemoval=true)
+     */
+    private $operations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Credit::class, mappedBy="Compte", orphanRemoval=true)
+     */
+    private $credits;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Echeance::class, mappedBy="Compte")
+     */
+    private $echeances;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Echeance::class, mappedBy="compte_destinataire_virement")
+     */
+    private $echeances_virement;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ContratFacturation::class, mappedBy="Compte", orphanRemoval=true)
+     */
+    private $contratFacturations;
+
     public function __construct()
     {
         $this->modePaiements = new ArrayCollection();
+        $this->operations = new ArrayCollection();
+        $this->credits = new ArrayCollection();
+        $this->echeances = new ArrayCollection();
+        $this->echeances_virement = new ArrayCollection();
+        $this->contratFacturations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -187,6 +223,156 @@ class Compte
             // set the owning side to null (unless already changed)
             if ($modePaiement->getCompte() === $this) {
                 $modePaiement->setCompte(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Operation[]
+     */
+    public function getOperations(): Collection
+    {
+        return $this->operations;
+    }
+
+    public function addOperation(Operation $operation): self
+    {
+        if (!$this->operations->contains($operation)) {
+            $this->operations[] = $operation;
+            $operation->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperation(Operation $operation): self
+    {
+        if ($this->operations->removeElement($operation)) {
+            // set the owning side to null (unless already changed)
+            if ($operation->getCompte() === $this) {
+                $operation->setCompte(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Credit[]
+     */
+    public function getCredits(): Collection
+    {
+        return $this->credits;
+    }
+
+    public function addCredit(Credit $credit): self
+    {
+        if (!$this->credits->contains($credit)) {
+            $this->credits[] = $credit;
+            $credit->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCredit(Credit $credit): self
+    {
+        if ($this->credits->removeElement($credit)) {
+            // set the owning side to null (unless already changed)
+            if ($credit->getCompte() === $this) {
+                $credit->setCompte(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(Echeance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(Echeance $echeance): self
+    {
+        if ($this->echeances->removeElement($echeance)) {
+            // set the owning side to null (unless already changed)
+            if ($echeance->getCompte() === $this) {
+                $echeance->setCompte(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheancesVirement(): Collection
+    {
+        return $this->echeances_virement;
+    }
+
+    public function addEcheancesVirement(Echeance $echeancesVirement): self
+    {
+        if (!$this->echeances_virement->contains($echeancesVirement)) {
+            $this->echeances_virement[] = $echeancesVirement;
+            $echeancesVirement->setCompteDestinataireVirement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheancesVirement(Echeance $echeancesVirement): self
+    {
+        if ($this->echeances_virement->removeElement($echeancesVirement)) {
+            // set the owning side to null (unless already changed)
+            if ($echeancesVirement->getCompteDestinataireVirement() === $this) {
+                $echeancesVirement->setCompteDestinataireVirement(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ContratFacturation[]
+     */
+    public function getContratFacturations(): Collection
+    {
+        return $this->contratFacturations;
+    }
+
+    public function addContratFacturation(ContratFacturation $contratFacturation): self
+    {
+        if (!$this->contratFacturations->contains($contratFacturation)) {
+            $this->contratFacturations[] = $contratFacturation;
+            $contratFacturation->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContratFacturation(ContratFacturation $contratFacturation): self
+    {
+        if ($this->contratFacturations->removeElement($contratFacturation)) {
+            // set the owning side to null (unless already changed)
+            if ($contratFacturation->getCompte() === $this) {
+                $contratFacturation->setCompte(null);
             }
         }
 

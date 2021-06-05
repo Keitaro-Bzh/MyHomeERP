@@ -16,6 +16,9 @@
         </header>
 
         <div class="panel-body">
+            {% for flashError in app.flashes('passwordChanged') %}
+                <div class="alert alert-success" role="alert">{{ flashError }}</div>
+            {% endfor %}
             {{ form_start(registrationForm)}}
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
@@ -48,16 +51,4 @@
             {{ form_end(registrationForm)}}
         </div>
     </section>
-{% endblock %}
-
-{% block footer_script %}
-    <script src="{{ asset('assets/vendor/codemirror/lib/codemirror.js') }}"></script>  
-    <script src="{{ asset('assets/vendor/bootstrap-maxlength/bootstrap-maxlength.js') }}"></script>
-    <script src="{{ asset('assets/vendor/ios7-switch/ios7-switch.js') }}"></script>
-{% endblock %}
-
-{% block page_script %}
-    <script>
-        
-    </script>
 {% endblock %}

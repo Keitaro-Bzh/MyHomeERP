@@ -14,6 +14,9 @@
         </header>
 
         <div class="panel-body">
+            {% for flashError in app.flashes('contactFlashMSG') %}
+                <div class="alert alert-info" role="alert">{{ flashError }}</div>
+            {% endfor %}
             <div class="tabs">
                 <ul class="nav nav-tabs">
                     <li class="active">
@@ -46,7 +49,7 @@
                                                 <td><a href="mailto:{{ personne.email|e }}">{{ personne.email|e }}</a></td>
                                                 <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_personnes_edit', { 'id' : personne.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-personne-effacer-{{personne.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('La suppression d\'une personne entraine la suppression de tous les enregistrements liés. \n\nEtes vous sur de vouloir continuer?') && document.getElementById('js-personne-effacer-{{personne.id}}').submit();"><i class="fa fa-trash-o"></i></a>
                                                     <form id="js-personne-effacer-{{personne.id}}"  action="{{ path('app_personnes_del', { 'id' : personne.id }) }}" method="post" style="display:none;">
                                                         <input type="hidden" name="csrf_token" value="{{ csrf_token('personne_supprime_' ~ personne.id) }}">
                                                         <input type="hidden" name="_method" value="DELETE">
@@ -106,6 +109,4 @@
             </div>
         </div>
     </section>
-
-
 {% endblock %}

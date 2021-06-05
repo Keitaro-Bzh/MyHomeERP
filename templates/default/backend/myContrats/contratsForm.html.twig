@@ -1,0 +1,98 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}MES CONTRATS{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <div class="mb-md">
+                    <a href="{{ path('app_myContrats') }}"><button class="btn btn-warning btn-sm"><i class="fa fa-rotate-left"></i> ANNULER</button></a>
+                </div>
+            </div>
+
+            <h2 class="panel-title">CONTRAT</h2>
+            <p class="panel-subtitle">Formulaire de saisie (<span class='required'>*</span> champ requis)</p>
+        </header>
+
+        <div class="panel-body">
+            {{ form_start(form)}}
+                <div class="col-md-10 col-md-offset-2">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">PRESTATAIRE <span class='required'>*</span></label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.SocieteID) }}
+                        </div>
+                        <div class="col-md-4 text-right">
+                        Facturable <div class="switch switch-sm switch-success">{{ form_widget(form.facturable)}}</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DATE SIGNATURE <span class='required'>*</span></label>
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                {{ form_widget(form.date_signature) }}
+                            </div>
+                        </div>
+                        <div class="text-primary col-md-5 text-center">
+                            <p>Si facturable, la saisie des détails de la facturation se fera une fois le contrat enregistré</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DATE FIN CONTRAT</label>
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                {{ form_widget(form.date_fin_contrat) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">N° CONTRAT</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.reference_contrat) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DESCRIPTION <span class='required'>*</span></label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.description) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">CATEGORIE <span class='required'>*</span></label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.CategorieID) }}
+                        </div>
+                        <div class="col-md-4 text-right text-danger">
+                        <strong>Archiver le contrat</strong> <div class="switch switch-sm switch-success">{{ form_widget(form.est_archive)}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-7 text-right">
+                        <input type="submit" class="btn btn-sm btn-success" value="VALIDER" />
+                    </div>
+                </div>
+            </div>
+        {{ form_end(form)}}
+    </section>
+
+{% endblock %}
+
+{% block footer_script %}
+    <script src="{{ asset('assets/vendor/codemirror/lib/codemirror.js') }}"></script>  
+    <script src="{{ asset('assets/vendor/bootstrap-maxlength/bootstrap-maxlength.js') }}"></script>
+    <script src="{{ asset('assets/vendor/ios7-switch/ios7-switch.js') }}"></script>
+    </script>
+        $(document).ready(function() {
+        // you may need to change this code if you are not using Bootstrap Datepicker
+        $('.js-datepicker').datepicker({
+            format: 'yyyy-mm-dd'
+        });
+    });
+    </script>
+{% endblock %}

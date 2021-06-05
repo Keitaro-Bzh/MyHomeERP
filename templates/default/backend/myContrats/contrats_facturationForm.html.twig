@@ -1,0 +1,189 @@
+{% extends 'default/backend/index.html.twig' %}
+
+
+
+{% block titre_page %}MES CONTRATS{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <div class="mb-md">
+                    <a href="{{ path('app_myContrats') }}"><button class="btn btn-warning btn-sm"><i class="fa fa-rotate-left"></i> ANNULER</button></a>
+                </div>
+            </div>
+
+            <h2 class="panel-title">CONTRAT</h2>
+            <p class="panel-subtitle">Description</p>
+        </header>
+
+        <div class="panel-body">
+            <div class="col-md-6 alert alert-success">
+                <p>
+                    <code class="h5 text-primary">DETAILS DU CONTRAT</code>
+                </p><br />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">PRETATAIRE</label>
+                    <label class="col-md-8 control-label"><strong>{{ contrat.Societe.nom}}<strong></label>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">DESCRIPTION</label>
+                    <label class="col-md-8 control-label"><strong>{{ contrat.description}}<strong></label>
+                </div>
+                <hr />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">REFERENCE CONTRAT</label>
+                    <label class="col-md-8 control-label"><strong>{{ contrat.referenceContrat}}<strong></label>
+                </div>
+                <hr />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">CATEGORIE</label>
+                    <label class="col-md-8 control-label"><strong>[{{ contrat.Categorie.Categorie.nom|upper }}] {{ contrat.Categorie.nom }}<strong></label>
+                </div>
+                <hr />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">DATE SIGNATURE</label>
+                    <label class="col-md-8 control-label"><strong>{{ contrat.dateSignature|date('d/m/Y')}}<strong></label>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">DATE FIN DE CONTRAT</label>
+                    <label class="col-md-8 control-label"><strong>
+                    {% if (contrat.dateFinContrat) %}
+                        {{ contrat.dateFinContrat|date('d/m/Y')}}</label>
+                    {% else %}
+                        <label class="control-label text-muted">CONTRAT PERMANENT</label>
+                    {% endif %}</strong>
+                </div>
+            </div>
+            <div class="col-md-offset-1 col-md-5 alert alert-info text-center">
+                <a class="modal-basic btn btn-sm btn-primary" href="#modalBasic"><i class="fa fa-plus"> NOUVELLE PERIODE DE FACTURATION</i></a>
+                {% if (contratFacturations|length > 0) %}
+                    <hr />
+                    <div class="text-left">
+                        {% for contratFacturation in contratFacturations %}
+                        <div class="col-md-9">
+                            [{{ contratFacturation.Compte.Banque.Societe.nom }}] {{ contratFacturation.Compte.libelle }}
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <i class="fa fa-pencil"></i>
+                                {#{% if (contrat.facturable) %}<a href="{{ path('app_myContrats_facturation_form', { 'id' : contrat.id }) }}"><i class="fa fa-folder-open"></i></a>{% endif %}
+                                            <a href="{{ path('app_myContrats_edit', { 'id' : contrat.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-contrat-effacer-{{contrat.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                            <form id="js-contrat-effacer-{{contrat.id}}"  action="{{ path('app_myContrats_del', { 'id' : contrat.id }) }}" method="post" style="display:none;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('contrat_supprime_' ~ contrat.id) }}">
+                                                <input>#}
+                        </div>
+                        <br />
+                        <p class='col-md-12'>
+                            <table  class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                <thead>
+                                    <tr>
+                                        <th class='col-md-3 text-center'>Début</th>
+                                        <th class='col-md-3 text-center'>Fin</th>
+                                        <th class='col-md-3 text-center'>Montant</th>
+                                        <th class='col-md-3 text-center'>Fréquence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                        <tr>
+                                            <td class='col-md-3 text-center'>{{ contratFacturation.dateDebut|date('d/m/Y') }}</td>
+                                            <td class='col-md-3 text-center'>{% if contratFacturation.dateFin %}{{ contratFacturation.dateFin|date('d/m/Y') }}{% else %}<i class="fa fa-circle-o-notch"></i> {% endif %}</td>
+                                            <td class='col-md-3 text-center'>{{ contratFacturation.montant }} <i class="fa fa-euro"></i></td>
+                                            <td class='col-md-3 text-center'>
+                                                {{ contratFacturation.frequenceNombrePaiement }} {{ contratFacturation.frequencePaiement }}
+                                            </td>
+                                        </tr>
+                                </tbody>
+                            </table>
+                        </p>
+                        <hr />
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <hr />
+                    <div class="alert alert-success">
+                        Aucune période de facturation n'a été enregistrée pour le moment.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    <div id="modalBasic" class="modal-block mfp-hide">
+        {{ form_start(form)}}
+            <div class="alert alert-info">
+                {% for flashError in app.flashes('flashMSG') %}
+                    <div class="col-md-12 alert alert-danger" role="alert">{{ flashError }}</div>
+                {% endfor %}
+                <p class="text-right">
+                    <code class="h5 text-primary">SAISIE D'UNE PERIODE D'UNE FACTURATION</code><br />
+                    (<span class='required'>*</span> champ requis)
+                </p><br />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">COMPTE <span class='required'>*</span></label>
+                    <div class="col-md-8">
+                        {{ form_widget(form.CompteID) }}
+                        <span class="text-danger">{{ form_errors(form.CompteID)}}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">DATE DEBUT <span class='required'>*</span></label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            {{ form_widget(form.date_debut) }}
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">DATE FIN</label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            {{ form_widget(form.date_fin) }}
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">MONTANT <span class='required'>*</span></label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            {{ form_widget(form.montant) }}
+                            <span class="input-group-addon">
+                                <i class="fa fa-euro"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label">FREQUENCE <span class='required'>*</span></label>
+                    <div class="col-md-2">
+                        {{ form_widget(form.frequence_nombre_paiement) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_widget(form.frequence_paiement) }}
+                    </div>
+                </div>
+                
+                <div class="form-group text-right">
+                    <label class="col-md-12 control-label">RECALCULER LES OPERTATIONS PASSEES
+                    {{ form_widget(form.recalcul_operation_anterieur) }}</label>
+                </div>
+                <div class="col-md-12 text-right">
+					<button class="btn btn-sm btn-warning modal-dismiss">ANNULER</button>
+                    <input type="submit" class="btn btn-sm btn-success" value="VALIDER" />
+                </div>
+                <br />
+            </div>
+            <br />
+        {{ form_end(form)}}
+    </div>
+{% endblock %}
+
+{% block footer_script %}
+
+    <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
+{% endblock %}

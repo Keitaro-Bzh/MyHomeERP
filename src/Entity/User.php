@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
+use App\Entity\MyContacts\Personne;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Traits\suiviLog;
+
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -28,8 +30,16 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\Email()
      */
     private $email;
+
+    /**
+     * @ORM\Column(type="string", length=180, unique=true, nullable=true)
+     * @Assert\Length(min=4, minMessage="Le pseudo doit comporter minimum 4 caractères")
+     * 
+     */
+    private $pseudo;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -48,6 +58,12 @@ class User implements UserInterface
      */
     private $password;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"})
+     */
+    private $personne;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +77,18 @@ class User implements UserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPseudo(): ?string
+    {
+        return $this->pseudo;
+    }
+
+    public function setPseudo(string $pseudo): self
+    {
+        $this->pseudo = $pseudo;
 
         return $this;
     }
@@ -139,6 +167,18 @@ class User implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getPersonne(): ?Personne
+    {
+        return $this->personne;
+    }
+
+    public function setPersonne(?Personne $personne): self
+    {
+        $this->personne = $personne;
+
+        return $this;
     }
 
 }

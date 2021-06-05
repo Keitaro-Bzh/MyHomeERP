@@ -4,6 +4,8 @@ namespace App\Entity\MyFinances;
 
 use App\Entity\MyContacts\Personne;
 use App\Repository\MyFinances\ModePaiementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\suiviLog;
 
@@ -26,7 +28,7 @@ class ModePaiement
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private $typePaiement;
+    private $modePaiement;
 
     /**
      * @ORM\ManyToOne(targetEntity=Personne::class, inversedBy="modePaiements")
@@ -60,19 +62,36 @@ class ModePaiement
      */
     private $compte;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Operation::class, mappedBy="modePaiement")
+     */
+    private $operations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Echeance::class, mappedBy="mode_paiement")
+     * @ORM\Column(name="mode_paiement_echeance_id")
+     */
+    private $echeances;
+
+    public function __construct()
+    {
+        $this->operations = new ArrayCollection();
+        $this->echeances = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTypePaiement(): ?string
+    public function getModePaiement(): ?string
     {
-        return $this->typePaiement;
+        return $this->modePaiement;
     }
 
-    public function setTypePaiement(string $typePaiement): self
+    public function setModePaiement(string $modePaiement): self
     {
-        $this->typePaiement = $typePaiement;
+        $this->modePaiement = $modePaiement;
 
         return $this;
     }
@@ -145,6 +164,66 @@ class ModePaiement
     public function setCompte(?Compte $compte): self
     {
         $this->compte = $compte;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Operation[]
+     */
+    public function getOperations(): Collection
+    {
+        return $this->operations;
+    }
+
+    public function addOperation(Operation $operation): self
+    {
+        if (!$this->operations->contains($operation)) {
+            $this->operations[] = $operation;
+            $operation->setModePaiement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperation(Operation $operation): self
+    {
+        if ($this->operations->removeElement($operation)) {
+            // set the owning side to null (unless already changed)
+            if ($operation->getModePaiement() === $this) {
+                $operation->setModePaiement(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(Echeance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setModePaiement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(Echeance $echeance): self
+    {
+        if ($this->echeances->removeElement($echeance)) {
+            // set the owning side to null (unless already changed)
+            if ($echeance->getModePaiement() === $this) {
+                $echeance->setModePaiement(null);
+            }
+        }
 
         return $this;
     }

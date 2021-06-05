@@ -1,0 +1,66 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}GESTION DES CONTRATS{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">LISTE DES CONTRATS</h2>
+            <div class="panel-actions">
+                <a href="{{ path('app_myContrats_contrat_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> NOUVEAU</button></a>
+              </div>
+        </header>
+        <div class="panel-body">
+            {% for flashError in app.flashes('flashMSG') %}
+                <div class="col-md-12 alert alert-info" role="alert">{{ flashError }}</div>
+            {% endfor %}
+            <div class="col-md-12">
+                <section class="panel">
+                    {% if contrats|length %}
+                        <div class="panel-body">
+                            <section class="panel">
+                                <div class="panel-body">
+                                        <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                            <thead>
+                                                <tr>
+                                                    <th class='col-md-1 text-center'>Date signature</th>
+                                                    <th class='col-md-1 text-center'>Date fin contrat</th>
+                                                    <th>Prestataire</th>
+                                                    <th>Description</th>
+                                                    <th class='col-md-1 text-center'>Options</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for contrat in contrats %}
+                                                    <tr>
+                                                        <td class='col-md-1 text-center'>{{ contrat.dateSignature|date('d/m/Y') }}</td>
+                                                        <td class='col-md-1 text-center'>{% if contrat.dateFinContrat %}{{ contrat.dateFinContrat|date('d/m/Y') }}{% else %}<i class="fa fa-circle-o-notch"></i> {% endif %}</td>
+                                                        <td>{{ contrat.Societe.nom }}</td>
+                                                        <td>{{ contrat.description }}</a></td>
+                                                        <td class="actions text-center col-md-1">
+                                                            {% if (contrat.facturable) %}<a href="{{ path('app_myContrats_facturation_form', { 'id' : contrat.id }) }}"><i class="fa fa-folder-open"></i></a>{% endif %}
+                                                            <a href="{{ path('app_myContrats_edit', { 'id' : contrat.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-contrat-effacer-{{contrat.id}}').submit();"><i class="fa fa-trash-o"></i></a>
+                                                            <form id="js-contrat-effacer-{{contrat.id}}"  action="{{ path('app_myContrats_del', { 'id' : contrat.id }) }}" method="post" style="display:none;">
+                                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('contrat_supprime_' ~ contrat.id) }}">
+                                                                <input type="hidden" name="_method" value="DELETE">
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                </div>
+                            </section>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success">
+                            Aucun contrat n'a été enregistré pour le moment.
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </section>
+    {% block footer_Script %}{% endblock %}
+{% endblock %}

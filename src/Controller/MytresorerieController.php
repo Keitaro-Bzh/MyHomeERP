@@ -2,101 +2,473 @@
 
 namespace App\Controller;
 
+use App\Entity\MyFinances\Credit;
+use App\Entity\MyFinances\Echeance;
+use App\Entity\MyFinances\EcheanceOperation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use App\Form\BanqueChoiceType;
 use App\Form\PersonneChoiceType;
 use App\Form\SocieteBanqueChoiceType;
-use App\Entity\MyFinances\Banque;
-use App\Entity\MyFinances\Categorie;
-use App\Entity\MyFinances\Compte;
-use App\Entity\MyFinances\SousCategorie;
-use App\Entity\MyFinances\TypeCompte;
-use App\Form\CategorieChoiceType;
-use App\Repository\MyContacts\SocieteRepository;
-use App\Repository\MyContacts\PersonneRepository;
-use App\Repository\MyFinances\BanqueRepository;
-use App\Repository\MyFinances\CategorieRepository;
+use App\Entity\MyFinances\Operation;
 use App\Repository\MyFinances\CompteRepository;
-use App\Repository\MyFinances\ModePaiementRepository;
-use App\Repository\MyFinances\SousCategorieRepository;
 use App\Repository\MyFinances\TypeCompteRepository;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use App\Form\CompteChoiceType;
+use App\Form\ModePaiementChoiceType;
+use App\Form\SousCategorieChoiceType;
+use App\Repository\MyContacts\PersonneRepository;
+use App\Repository\MyContacts\SocieteRepository;
+use App\Repository\MyFinances\CreditRepository;
+use App\Repository\MyFinances\ModePaiementRepository;
+use App\Repository\MyFinances\OperationRepository;
+use App\Repository\MyFinances\SousCategorieRepository;
+use DateTime;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
-class MytresorerieController extends AbstractController
+class MyTresorerieController extends AbstractController
 {
     /**
      * @Route("/tresorerie", name="app_myTresorerie_index")
      */
-    public function mytresorerie_index(): Response
+    public function mytresorerie_index(CompteRepository $compteRepo, TypeCompteRepository $typeCompteRepo ): Response
     {
-        return $this->render('default/backend/myTresorerie/mytresorerie.html.twig', [
-            'controller_name' => 'MytresorerieController',
-        ]);
-    }
-
-    /**
-     * @Route("/tresorerie/referentiel", name="app_myTresorerie_referentiel")
-     */
-    public function mytresorerie_referentiel(BanqueRepository $banqueRepo, CompteRepository $compteRepo,ModePaiementRepository $modePaiement,TypeCompteRepository $typeCompteRepo, CategorieRepository $categorieRepo): Response
-    {
-        $banques = $banqueRepo->findAll();
-        $comptes = $compteRepo->findAll();
-        $categories = $categorieRepo->findAll();
-        $modesPaiement = $modePaiement->findAll();
         $typesCompte = $typeCompteRepo->findAll();
+        $comptes = $compteRepo->findAll();
 
-        return $this->render('default/backend/myTresorerie/referentiel.html.twig', [
-            'controller_name' => 'MytresorerieController',
-            'banques' => $banques,
+        return $this->render('default/backend/myTresorerie/mytresorerie.html.twig', [
+            'controller_name' => 'MyTresorerieController',
             'comptes' => $comptes,
-            'categories' => $categories,
-            'modesPaiement' => $modesPaiement,
-            'typesCompte' => $typesCompte,
+            'typesCompte' => $typesCompte
         ]);
     }
 
     /**
-     * @Route("/tresorerie/comptes/liste", name="app_myTresorerie_compte_liste")
+     * @Route("/tresorerie/comptes/{id<[0-9+]>}", name="app_myTresorerie_compte_releve")
      */
-    public function mytresorerie_compte(): Response
+    public function mytresorerie_compte(int $id,OperationRepository $operationRepo, CompteRepository $compteRepo): Response
     {
-        return $this->render('default/backend/myTresorerie/compte.html.twig', [
-            'controller_name' => 'MytresorerieController',
+        $compte = $compteRepo->find($id);
+        //dd($operationRepo->findEcheances($compte));
+        return $this->render('default/backend/myTresorerie/compte_releve.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'compte' => $compte,
+            'operationsEcheancesFuturs' => $operationRepo->findEcheances($compte),
+            'operationsNonRapprochees' => $operationRepo->findOperationsNonRapprochees($compte),
+            'operationsRapprochees' => $operationRepo->findOperationsRapprochees($compte),
         ]);
     }
 
+    
     /**
-     * @Route("/tresorerie/banque/add", name="app_myTresorerie_referentiel_banque_add")
-     * @Route("/tresorerie/banque/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_banque_edit")
+     * @Route("/tresorerie/operation/credit", name="app_myTresorerie_operation_credit")
+     * @Route("/tresorerie/operation/credit/{id}", name="app_myTresorerie_operation_credit_edit")
      */
-    public function mytresorerie_referentiel_banque_form(?int $id,BanqueRepository $banqueRepo, SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
+    public function mytresorerie_operation_credit(?int $id,SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
     {
-        $banque = new Banque();
+        $operation = new Operation();
         if (isset($id)) {
-            $banque = $banqueRepo->find($id);
+            $operation = $operationRepo->find($id);
         }
-        $form = $this->createFormBuilder($banque)
-            ->add('societeID', SocieteBanqueChoiceType::class, [
+
+        $form = $this->createFormBuilder($operation)
+            ->add('type_operation', HiddenType::class, [
+                'data' => 'CRE',
+            ])
+            ->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $operation->getDate() ? $operation->getDate() : new DateTime()
+            ])
+            ->add('description', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('compteID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
+                'data' => $operation->getCompte() ?  $operation->getCompte()->getId() : null
             ])
-            ->add('guichet', TextType::class, [
+            ->add('modePaiementTrigramme', ChoiceType::class, [
+                'choices' => array(
+                    '--- Sélectionnez un mode de paiement ---' => '-1',
+                    '--- Virement ---' => 'VIR',
+                    '--- Dépot Chèque/Espèce ---' => 'DEP'
+                ),
+                'attr' => ['class' => 'form-control'],
+                'data' => $operation->getModePaiement() ?  $operation->getModePaiement()->getId() : ($operation->getModePaiementTrigramme() ?  : null)
+                //'data' => $operation->getModePaiementTrigramme() ?  $operation->getModePaiementTrigramme : null,
+            ])
+            ->add('typeTiers', ChoiceType::class, array(
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    'Saisie libre ' => 'L',
+                    '[CA] Société' => 'S',
+                    '[CA] Personne' => 'P'
+                ),
+                'data' => $operation->getTypeTiers() ? $operation->getTypeTiers() : 'L'
+            ))
+            ->add('tiers_libelle', TextType::class, [
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
-            ->add('codeBanque',IntegerType::class, [
+            ->add('societeID',SocieteBanqueChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : null
+            ])            
+            ->add('personneID',PersonneChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : null
+            ])   
+            ->add('categorieID',SousCategorieChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => $operation->getCategorie() ?  $operation->getCategorie()->getId() : null
+            ])
+            ->add('credit',NumberType::class, [
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('est_pointe', CheckboxType::class, [
+                'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
+                'required' => false
+            ])
+            ->getform()
+        ;
+
+        $form->handleRequest($requete);
+
+        if ($form->isSubmitted() && $form->isValid()) { 
+            if ($requete->request->get('form')['credit'] > 0) {
+                $operation->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
+                $operation->setCategorie($sousCategorieRepo->find($requete->request->get('form')['categorieID']));
+                switch ($operation->getTypeTiers()) {
+                    case "L":
+                        $operation->setPersonne(null);
+                        $operation->setSociete(null);
+                        break;
+                    case "P":
+                        $operation->setTiersLibelle(null);
+                        $operation->setPersonne($personnneRepo->find($requete->request->get('form')['personneID']));
+                        $operation->setSociete(null);
+                        break;
+                    case "S":
+                        $operation->setTiersLibelle(null);
+                        $operation->setPersonne(null);
+                        $operation->setSociete($societeRepo->find($requete->request->get('form')['societeID']));
+                        break;
+                }
+
+                $em->persist($operation);
+                $em->flush();
+
+                $this->addFlash("userUpdate", "Ajout opération effectué");
+                return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $requete->request->get('form')['compteID']]);
+            }
+            else {
+                $this->addFlash("errorMSG", "Merci de saisir un montant positif");
+            }
+        }
+
+        return $this->render('default/backend/myTresorerie/operation_credit.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/tresorerie/operation/debit", name="app_myTresorerie_operation_debit")
+     * @Route("/tresorerie/operation/debit/{id}", name="app_myTresorerie_operation_debit_edit")
+     */
+    public function mytresorerie_debit(?int $id,SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        $operation = new Operation();
+        if (isset($id)) {
+            $operation = $operationRepo->find($id);
+        }
+
+        $form = $this->createFormBuilder($operation)
+            ->add('type_operation', HiddenType::class, [
+                'data' => 'DEB',
+            ])
+            ->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $operation->getDate() ? $operation->getDate() : new DateTime()
+            ])
+            ->add('description', TextType::class, [
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
-            ->add('codeGuichet',IntegerType::class, [
+            ->add('compteID', CompteChoiceType::class, [
+                'mapped' => false,
                 'attr' => ['class' => 'form-control'],
+                'data' => $operation->getCompte() ?  $operation->getCompte()->getId() : null
+            ])
+            ->add('modePaiementID', ModePaiementChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => $operation->getModePaiement() ?  $operation->getModePaiement()->getId() : ($operation->getModePaiementTrigramme() ?  : null)
+            ])
+            ->add('typeTiers', ChoiceType::class, array(
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    'Saisie libre ' => 'L',
+                    '[CA] Société' => 'S',
+                    '[CA] Personne' => 'P'
+                ),
+                'data' => $operation->getTypeTiers() ? $operation->getTypeTiers() : 'L'
+            ))
+            ->add('tiers_libelle', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('societeID',SocieteBanqueChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : null
+            ])            
+            ->add('personneID',PersonneChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : null
+            ])   
+            ->add('categorieID',SousCategorieChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => $operation->getCategorie() ?  $operation->getCategorie()->getId() : null
+            ])
+            ->add('debit',NumberType::class, [
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('numeroCheque', IntegerType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('est_pointe', CheckboxType::class, [
+                'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
+                'required' => false
+            ])
+            ->getform()
+        ;
+
+        $form->handleRequest($requete);
+
+        if ($form->isSubmitted() && $form->isValid()) { 
+            if ($requete->request->get('form')['debit'] > 0) {
+                $operation->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
+
+                // On va gérer le mode de paiement
+                if ($requete->request->get('form')['modePaiementID']) {
+                    switch ($requete->request->get('form')['modePaiementID']) {
+                        case 'VIR':
+                        case 'PRE':
+                            $operation->setModePaiementTrigramme(substr($requete->request->get('form')['modePaiementID'],0,3));
+                            break;
+                        default:
+                            $modePaiement = $modePaiementRepo->find($requete->request->get('form')['modePaiementID']);
+                            $operation->setModePaiement($modePaiement);
+                            $operation->setModePaiementTrigramme(substr($modePaiement->getModePaiement(),0,3));
+                            break;
+                    }
+
+                }
+                $operation->setCategorie($sousCategorieRepo->find($requete->request->get('form')['categorieID']));
+                switch ($operation->getTypeTiers()) {
+                    case "L":
+                        $operation->setPersonne(null);
+                        $operation->setSociete(null);
+                        break;
+                    case "P":
+                        $operation->setTiersLibelle(null);
+                        $operation->setPersonne($personnneRepo->find($requete->request->get('form')['personneID']));
+                        $operation->setSociete(null);
+                        break;
+                    case "S":
+                        $operation->setTiersLibelle(null);
+                        $operation->setPersonne(null);
+                        $operation->setSociete($societeRepo->find($requete->request->get('form')['societeID']));
+                        break;
+                }
+
+                $em->persist($operation);
+                $em->flush();
+
+                $this->addFlash("userUpdate", "Ajout opération effectué");
+                return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $requete->request->get('form')['compteID']]);
+            }
+            else {
+                $this->addFlash("errorMSG", "Merci de saisir un montant positif");
+            }
+        }
+
+        return $this->render('default/backend/myTresorerie/operation_debit.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/tresorerie/operation/virement", name="app_myTresorerie_virement")
+     * @Route("/tresorerie/operation/virement/{id<^\d{1,10}>}", name="app_myTresorerie_virement_edit", methods={"GET", "POST"})
+     */
+    public function mytresorerie_virement(?int $id,CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        // l'id correspond à l'id de l'operation du relevé. Il va donc falloir charger le formulaire
+        // en fonction de l'id_virement enregistré lors de l'enregistrement initial.
+        if (isset($id)) {
+            $operationDebit = $operationRepo->find($id);
+            $operationDebit = $operationRepo->findOperationVirementDebit($operationDebit->getVirementID());
+            $operationCredit = $operationRepo->findOperationVirementCredit($operationDebit->getVirementID());
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => isset($operationDebit) ? $operationDebit->getDate() : new DateTime()
+            ])
+            ->add('compteDebitID', CompteChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => isset($operationDebit) ? $operationDebit->getCompte()->getId() : ''
+            ])
+            ->add('compteCreditID', CompteChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => isset($operationCredit) ? $operationCredit->getCompte()->getId() : ''
+            ])
+            ->add('montant',NumberType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => isset($operationDebit) ? $operationDebit->getDebit() : 0.00
+            ])
+            ->add('est_pointe', CheckboxType::class, [
+                'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
+                'required' => false,
+                'data' => isset($operationDebit) && $operationDebit = '1' ? true : false
+            ])
+            ->getform()
+        ;
+
+        $form->handleRequest($requete);
+
+        if ($form->isSubmitted() && $form->isValid()) {     
+            if ($requete->request->get('form')['montant'] > 0) {
+                // Il va falloir créer 2 opérations avec un identifiant commun
+                $idVirement = time();
+                // -> une pour le débit
+                $operationDebit = new Operation;
+                $operationDebit->setDate(\DateTime::createFromFormat('d/m/Y', $requete->request->get('form')['date']));
+                $operationDebit->setDebit($requete->request->get('form')['montant']);
+                $operationDebit->setTypeOperation('VII');
+                $operationDebit->setVirementID($idVirement);
+                $operationDebit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
+                $operationDebit->setCompte($compteRepo->find($requete->request->get('form')['compteDebitID']));
+
+                $em->persist($operationDebit);
+                $em->flush();
+
+                // -> une pour le crédit
+                $operationCredit = new Operation;
+                $operationCredit->setDate(\DateTime::createFromFormat('d/m/Y', $requete->request->get('form')['date']));
+                $operationCredit->setCredit($requete->request->get('form')['montant']);
+                $operationCredit->setTypeOperation('VII');
+                $operationCredit->setVirementID($idVirement);
+                $operationDebit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
+                $operationCredit->setCompte($compteRepo->find($requete->request->get('form')['compteCreditID']));
+
+                $em->persist($operationCredit);
+                $em->flush();
+
+                // On positionne le relevé sur l'opération débitrice
+                return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $operationDebit->getCompte()->getId()]);
+            }
+            else {
+                $this->addFlash("errorMSG", "Merci de saisir un montant positif");
+            }
+        }
+        
+
+        return $this->render('default/backend/myTresorerie/operation_virement.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/tresorerie/operation/retrait", name="app_myTresorerie_retrait")
+     * @Route("/tresorerie/operation/retrait/{id<^\d{1,10}>}", name="app_myTresorerie_retrait_edit", methods={"GET", "POST"})
+     */
+    public function mytresorerie_retrait(?int $id,CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        $operation = new Operation;
+        if (isset($id)) {
+            $operation = $operationRepo->find($id);
+        }
+
+        $form = $this->createFormBuilder($operation)
+            ->add('type_operation', HiddenType::class, [
+                'data' => 'RET',
+            ])
+            ->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $operation->getDate() ? $operation->getDate() : new DateTime()
+            ])
+            ->add('compteID', CompteChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'data' => ($operation->getCompte()) ? $operation->getCompte()->getId() : -1
+            ])
+            ->add('debit', IntegerType::class, [
+                'attr' => ['class' => 'form-control'],
+                'data' => $operation->getDebit() > 0 ? $operation->getCompte()->getId() : 0.00
+            ])
+            ->add('est_pointe', CheckboxType::class, [
+                'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
                 'required' => false
             ])
             ->getform()
@@ -105,144 +477,158 @@ class MytresorerieController extends AbstractController
         $form->handleRequest($requete);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // On transforme l'id du select en société
-            $societe = $societeRepo->findBy(['id' => $requete->request->get('form')['societeID'] ]);
-            $banque->setSociete($societe[0]);
-            // ***************************************
-            $em->persist($banque);
-            $em->flush();
+            if ( $operation->getDebit() > 0) {
+                $operation->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
+                
+                $em->persist($operation);
+                $em->flush();
 
-            return $this->redirectToRoute('app_myTresorerie_referentiel');
+                $this->addFlash("userUpdate", "Ajout retrait effectué");
+                $CompteID = $operation->getCompte()->getId();
+                return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $CompteID]);
+            }
+            else {
+                $this->addFlash("errorMSG", "Merci de saisir un montant positif");
+            }
         }
 
-        return $this->render('default/backend/myTresorerie/banque.html.twig', [
-            'controller_name' => 'MytresorerieController',
+        return $this->render('default/backend/myTresorerie/operation_retrait.html.twig', [
+            'controller_name' => 'MyTresorerieController',
             'form' => $form->createView()
         ]);
     }
 
     /**
-     * @Route("/tresorerie/compte/add", name="app_myTresorerie_referentiel_compte_add")
-     * @Route("/tresorerie/compte/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_compte_edit")
+     * @Route("/tresorerie/operation/pointage/{id<^\d{1,10}>}", name="app_operation_pointage", methods ="UPDATE")
      */
-    public function mytresorerie_referentiel_compte_form(?int $id,PersonneRepository $personneRepo, CompteRepository $compteRepo, BanqueRepository $banqueRepo, Request $requete, EntityManagerInterface $em): Response
+    public function operationPointage(Operation $operation, Request $requete, EntityManagerInterface $em): Response
     {
-        $compte = new Compte();
-        if (isset($id)) {
-            $compte = $compteRepo->find($id);
+        if ($this->isCsrfTokenValid('operation_pointage_' . $operation->getId(), $requete->request->get('csrf_token'))) {
+            if ($operation->getEstPointe()) {
+                $operation->setEstPointe(false);
+            }
+            else {
+                $operation->setEstPointe(true);
+            }
+            $em->persist($operation);
+            $em->flush();            
+            
+            return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $operation->getCompte()->getId()]);
         }
-        $form = $this->createFormBuilder($compte)
-            ->add('banqueID', BanqueChoiceType::class, [
-                'mapped' => false,
-                'attr' => ['class' => 'form-control'],
-            ])
-            ->add('typeCompte', ChoiceType::class, [
-                'choices'  => [
-                    'Courant' => 'C',
-                    'Epargne' => 'E',
-                    'Titre' => 'T',
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/operation/delete/{id<^\d{1,10}>}", name="app_operation_del", methods ="DELETE")
+     */
+    public function operationDelete(Operation $operation,OperationRepository $operationRepo, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('operation_supprime_' . $operation->getId(), $requete->request->get('csrf_token'))) {
+            $CompteID = $operation->getCompte()->getId();
+            // Spécificité pour les virements ou il faut supprimer 2 opérations
+            if ($operation->getTypeOperation() == 'VII') {
+                $operationCredit = $operationRepo->findOperationVirementCredit($operation->getVirementID());
+                $operation = $operationRepo->findOperationVirementDebit($operation->getVirementID());
+                $em->remove($operationCredit);
+                $em->remove($operation);
+                $this->addFlash("successMSG", "Opérations supprimées");
+            }
+            else {
+                $em->remove($operation);
+                $this->addFlash("successMSG", "Opération supprimée");
+            }
+            $em->flush();            
+            
+            return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $CompteID]);
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/credit", name="app_myTresorerie_credit")
+     */
+    public function mytresorerie_credit(?int $id, CreditRepository $creditRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        return $this->render('default/backend/myTresorerie/credit.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'credits' => $creditRepo->findAll()
+        ]);
+    }
+
+        /**
+     * @Route("/tresorerie/credit/add", name="app_myTresorerie_credit_add")
+     * @Route("/tresorerie/credit/edit/{id}", name="app_myTresorerie_credit_edit", methods={"GET", "POST"})
+     */
+    public function mytresorerie_credit_form(?int $id,CompteRepository $compteRepo, CreditRepository $creditRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        $credit = new Credit();
+        if (isset($id)) {
+            $credit = $creditRepo->find($id);
+        }
+        
+        $form = $this->createFormBuilder($credit)
+            ->add('dateEcheanceOne', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
                 ],
-                'attr' => ['class' => 'form-control']
+                'data' => $credit->getDateEcheanceOne() ? $credit->getDateEcheanceOne() : new DateTime()
             ])
-            ->add('titulaireID', PersonneChoiceType::class, [
+            ->add('dateSignature', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'required' => false,
+                'data' => $credit->getDateSignature() ? $credit->getDateSignature() : new DateTime()
+            ])
+            ->add('compteID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-            ])
-            ->add('cotitulaireID', PersonneChoiceType::class, [
-                'mapped' => false,
-                'attr' => ['class' => 'form-control'],
-                'required' => false
+                'data' => ($credit->getCompte()) ? $credit->getCompte()->getId() : -1
             ])
             ->add('libelle', TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'data' => ($credit->getLibelle()) ? $credit->getLibelle() : null
             ])
-            ->add('numero',IntegerType::class, [
-                'attr' => ['class' => 'form-control'],
+            ->add('estCloture', CheckboxType::class, [
+                'data' => $credit->getEstCloture() ? true : false,
                 'required' => false
             ])
-            ->add('soldeInitial',IntegerType::class, [
+            ->add('duree', IntegerType::class, [
                 'attr' => ['class' => 'form-control'],
-                'required' => false
-            ])
-            ->getform()
-        ;
-
-        $form->handleRequest($requete);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // On transforme les ID des différents <select> pour les associer à un objet que l'on enregistrera dans la base
-                $banque = $banqueRepo->findBy(['id' => $requete->request->get('form')['banqueID'] ]);
-                $compte->setBanque($banque[0]);
-                if ((int)['id' => $requete->request->get('form')['titulaireID'] ]) {
-                    $personne = $personneRepo->findBy(['id' => $requete->request->get('form')['titulaireID'] ]);
-                    $compte->setTitulaire($personne[0]);
-                }
-                if ((int)['id' => $requete->request->get('form')['cotitulaireID'] ]) {
-                    $personne = $personneRepo->findBy(['id' => $requete->request->get('form')['cotitulaireID'] ]);
-                    $compte->setCotitulaire($personne[0]);
-                }
-            // ***************************************
-            $em->persist($compte);
-            $em->flush();
-
-            return $this->redirectToRoute('app_myTresorerie_referentiel');
-        }
-
-        return $this->render('default/backend/myTresorerie/referentiel_comptesForm.html.twig', [
-            'controller_name' => 'MytresorerieController',
-            'form' => $form->createView()
-        ]);
-    }
-
-    /**
-     * @Route("/tresorerie/categorie/add", name="app_myTresorerie_referentiel_categorie_add")
-     * @Route("/tresorerie/categorie/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_categorie_edit")
-     */
-    public function mytresorerie_referentiel_categorie_form(?int $id,CategorieRepository $categorieRepo, Request $requete, EntityManagerInterface $em): Response
-    {
-        $categorie = new Categorie();
-        if (isset($id)) {
-            $categorie = $categorieRepo->find($id);
-        }
-        $form = $this->createFormBuilder($categorie)
-            ->add('nom', TextType::class, [
-                'attr' => ['class' => 'form-control'],
-            ])
-            ->getform()
-        ;
-
-        $form->handleRequest($requete);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($categorie);
-            $em->flush();
-
-            return $this->redirectToRoute('app_myTresorerie_referentiel');
-        }
-
-        return $this->render('default/backend/myTresorerie/referentiel_categoriesForm.html.twig', [
-            'controller_name' => 'MytresorerieController',
-            'form' => $form->createView()
-        ]);
-    }
-
-    /**
-     * @Route("/tresorerie/sous_categorie/add", name="app_myTresorerie_referentiel_sous_categorie_add")
-     * @Route("/tresorerie/sous_categorie/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_sous_categorie_edit")
-     */
-    public function mytresorerie_referentiel_souscategorie_form(?int $id,SousCategorieRepository $sousCategorieRepo, CategorieRepository $categorieRepo, Request $requete, EntityManagerInterface $em): Response
-    {
-        $sousCategorie = new SousCategorie();
-        if (isset($id)) {
-            $sousCategorie = $sousCategorieRepo->find($id);
-        }
-        $form = $this->createFormBuilder($sousCategorie)
-            ->add('categorieID', CategorieChoiceType::class, [
+                'data' => $credit->getDuree() > 0 ? $credit->getDuree() : 0.00
+            ])   
+            ->add('categorieID',SousCategorieChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
+                'data' => $credit->getSousCategorie() ?  $credit->getSousCategorie()->getId() : null
             ])
-            ->add('nom', TextType::class, [
+            ->add('montant', NumberType::class, [
                 'attr' => ['class' => 'form-control'],
+                'data' => $credit->getMontant() > 0 ? $credit->getMontant() : 0.00
+            ])
+            ->add('taux', NumberType::class, [
+                'attr' => ['class' => 'form-control'],
+                'data' => $credit->getTaux() > 0 ? $credit->getTaux() : 0.00
+            ])
+            ->add('montantAssurance', NumberType::class, [
+                'attr' => ['class' => 'form-control'],
+                'data' => $credit->getMontantAssurance() > 0 ? $credit->getMontantAssurance() : 0.00
             ])
             ->getform()
         ;
@@ -250,93 +636,99 @@ class MytresorerieController extends AbstractController
         $form->handleRequest($requete);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // On transforme les ID des différents <select> pour les associer à un objet que l'on enregistrera dans la base
-            $categorie = $categorieRepo->findBy(['id' => $requete->request->get('form')['categorieID'] ]);
-            $sousCategorie->setCategorie($categorie[0]);
-        // ***************************************
-            $em->persist($sousCategorie);
-            $em->flush();
+            if ( $credit->getMontant() > 0) {
+                $credit->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
+                
+                $em->persist($credit);
+                $em->flush();
 
-            return $this->redirectToRoute('app_myTresorerie_referentiel');
+                // On va commencer par créer notre echéance
+                $echeance = new Echeance;
+                $echeance->setCompte($credit->getCompte());
+                $echeance->setCredit($credit);
+                $echeance->setTypeTiers('S');
+                $echeance->setTiersSociete($credit->getCompte()->getBanque()->getSociete());
+                $echeance->setTypeOperation('DEB');
+                $echeance->setNombreEcheances($credit->getDuree());
+                $echeance->setMontantTotal($credit->getMontant());
+                $echeance->setModePaiementTrigramme('PRE');
+                $echeance->setDescription($credit->getLibelle());
+                $echeance->setDateEcheanceOne($credit->getDateEcheanceOne());
+
+                $em->persist($echeance);
+                $em->flush();
+                // Puis définir le tableau d'amortissement
+                // Formule calcul selon le site
+                // https://www.inc-conso.fr/content/comment-sont-calculees-les-mensualites-de-votre-emprunt
+                $tauxMensuel = ((1 + ($credit->getTaux()/100))**(1/12))-1; 
+                $mensualite = round(($credit->getMontant()*$tauxMensuel*((1+$tauxMensuel)**$credit->getDuree()))/(((1+$tauxMensuel)**$credit->getDuree())-1),2) ;
+                $mensualite = $mensualite + $credit->getMontantAssurance();
+                $dateEcheance =$credit->getDateEcheanceOne();
+                for ($i =0; $i <= $echeance->getNombreEcheances(); $i++ ) {
+                    $echeanceOperation = new EcheanceOperation;
+                    $echeanceOperation->setMontantEcheance($mensualite);
+                    $echeanceOperation->setDateEcheance($dateEcheance);
+                    
+                    if ($i == $echeance->getNombreEcheances()) {
+                        $echeanceOperation->setMontantEcheance($echeance->getMontantTotal() - ($mensualite * $i));
+                    }
+                    $echeanceOperation->setEcheance($echeance);
+                    
+                    $em->persist($echeanceOperation);
+                    $em->flush();
+
+                    // On va créer les opérations antérieurs à la fin du mois
+                    $date = New DateTime('now');
+                    if ($echeanceOperation->getDateEcheance() < $date->modify('last day of this month')) {
+                        $operation = new Operation;
+                        $operation->setCompte($echeance->getCompte());
+                        $operation->setDescription($echeance->getDescription());
+                        $operation->setTypeOperation($echeance->getTypeOperation());
+                        $operation->setTypeTiers($echeance->getTypeTiers());
+                        $operation->setTiersLibelle($echeance->getTiersLibelle());
+                        $operation->setPersonne($echeance->getTiersPersonne());
+                        $operation->setSociete($echeance->getTiersSociete());
+                        $operation->setCategorie($echeance->getSousCategorie());
+                        $operation->setEcheanceOperation($echeanceOperation);
+                        $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
+                        $operation->setModePaiement($echeance->getModePaiement());
+                        $operation->setDate($echeanceOperation->getDateEcheance());
+                        $operation->setDebit($echeanceOperation->getMontantEcheance());
+                        $operation->setEstPointe(0);
+
+                        $em->persist($operation);
+                        $em->flush();
+                    }    
+                    $dateEcheance = date_modify($dateEcheance, '+1 month');
+                }
+                $this->addFlash("userUpdate", "Prêt bancaire enregistré");
+            }
+            else {
+                $this->addFlash("errorMSG", "Merci de saisir un montant positif");
+            }
+            return $this->redirectToRoute('app_myTresorerie_credit');
         }
 
-        return $this->render('default/backend/myTresorerie/referentiel_souscategoriesForm.html.twig', [
-            'controller_name' => 'MytresorerieController',
+        return $this->render('default/backend/myTresorerie/creditForm.html.twig', [
+            'controller_name' => 'MyTresorerieController',
             'form' => $form->createView()
         ]);
     }
 
     /**
-     * @Route("/tresorerie/type_compte/add", name="app_myTresorerie_referentiel_type_compte_add")
-     * @Route("/tresorerie/type_compte/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_type_compte_edit")
+     * @Route("/tresorerie/credit/delete/{id}", name="app_myTresorerie_credit_del", methods ="DELETE")
      */
-    public function mytresorerie_referentiel_typeCompte_form(?int $id, TypeCompteRepository $typeCompteRepo, Request $requete, EntityManagerInterface $em): Response
+    public function mytresorerie_credit_delete(Credit $credit,OperationRepository $operationRepo, Request $requete, EntityManagerInterface $em): Response
     {
-        $typeCompte = new TypeCompte();
-        if (isset($id)) {
-            $typeCompte = $typeCompteRepo->find($id);
+        if ($this->isCsrfTokenValid('credit_supprime_' . $credit->getId(), $requete->request->get('csrf_token'))) {
+            $em->remove($credit);
+            $em->flush();            
+            $this->addFlash("successMSG", "Crédit supprimé");
+            return $this->redirectToRoute('app_myTresorerie_credit');
         }
-        $form = $this->createFormBuilder($typeCompte)
-            ->add('nom', TextType::class, [
-                'attr' => ['class' => 'form-control'],
-            ])
-            ->add('retraitOK', CheckboxType::class, [
-                'required' => false,
-            ])
-            ->add('depotChequeOK', CheckboxType::class, [
-                'required' => false,
-            ])
-            ->add('carteOK', CheckboxType::class, [
-                'required' => false,
-            ])
-            ->add('autreModePaiementOK', CheckboxType::class, [
-                'required' => false,
-            ])
-            ->getform()
-        ;
-
-        $form->handleRequest($requete);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($typeCompte);
-            $em->flush();
-
-            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        else {
+            return $this->redirectToRoute('app_hacking');
         }
-
-        return $this->render('default/backend/myTresorerie/referentiel_typeCompteForm.html.twig', [
-            'controller_name' => 'MytresorerieController',
-            'form' => $form->createView()
-        ]);
     }
 
-    /**
-     * @Route("/tresorerie/operation", name="app_myTresorerie_operation")
-     */
-    public function mytresorerie_operation(): Response
-    {
-        return $this->render('default/backend/myTresorerie/operation.html.twig', [
-            'controller_name' => 'MytresorerieController',
-        ]);
-    }
-
-    /**
-     * @Route("/tresorerie/virement", name="app_myTresorerie_virement")
-     */
-    public function mytresorerie_virement(): Response
-    {
-        return $this->render('default/backend/myTresorerie/virement.html.twig', [
-            'controller_name' => 'MytresorerieController',
-        ]);
-    }
-
-    /**
-     * @Route("/tresorerie/retrait", name="app_myTresorerie_retrait")
-     */
-    public function mytresorerie_retrait(): Response
-    {
-        return $this->render('default/backend/myTresorerie/retrait.html.twig', [
-            'controller_name' => 'MytresorerieController',
-        ]);
-    }
 }

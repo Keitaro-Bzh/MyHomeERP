@@ -2,6 +2,9 @@
 
 namespace App\Entity\Traits;
 
+
+use Doctrine\ORM\EntityManagerInterface;
+
 trait suiviLog
 {
     /**
@@ -38,15 +41,14 @@ trait suiviLog
 
     public function getIdCreation(): ?int
     {
-        dd($this->getUser());
         return $this->id;
     }
 
     
-    public function setIdCreationn(?int $idCreation): self
+    public function setIdCreation(?int $idCreation): self
     {
         $this->id = $idCreation;
-
+        
         return $this;
     }
 
@@ -71,7 +73,7 @@ trait suiviLog
     public function setIdModification(?int $idModification): self
     {
         $this->id = $idModification;
-
+        
         return $this;
     }
 
@@ -80,13 +82,15 @@ trait suiviLog
      * @ORM\PreUpdate
      */
     public function majLog() {
+        //$user = $em->get('security.token_storage')->getToken()->getUser();
+
         if ($this->getdateCreation() == null) {
             $this->setdateCreation(new \DateTimeImmutable());
-            //$this->setIdCreationn($this->getUser()->getId());
+            //$this->setIdCreation($user->getId());
         }
 
         $this->setDateModification(new \DateTimeImmutable());
-        //$this->setIdModification($this->getUser()->getId());
+        //$this->setIdModification($user->getId());
     }
 
 }

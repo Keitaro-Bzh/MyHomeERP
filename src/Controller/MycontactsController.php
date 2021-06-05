@@ -18,7 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
-class MycontactsController extends AbstractController
+class MyContactsController extends AbstractController
 {
     /**
      * @Route("/contacts", name="app_mycontacts")
@@ -28,7 +28,7 @@ class MycontactsController extends AbstractController
         $personnes = $personneRepo->findAll();
         $societes = $societeRepo->findAll();
         return $this->render('default/backend/myContacts/myContacts.html.twig', [
-            'controller_name' => 'MyerpController',
+            'controller_name' => 'MyHomeERPController',
             'tablePersonnes' => $personnes,
             'tableSocietes' => $societes
         ]);
@@ -46,7 +46,14 @@ class MycontactsController extends AbstractController
             $personne = $personneRepo->find($id);
         }
 
-        $form = $this->createFormBuilder($personne)
+        $form = $this->createFormBuilder($personne)      
+            ->add('imagePhoto', VichImageType::class, [
+                'required' => false,
+                'allow_delete' => true,
+                'delete_label' => 'Effacer',
+                'imagine_pattern' => 'personne_image_photo',
+                'download_uri' => false,
+            ])
             ->add('nom', TextType::class, [
                 'attr' => ['class' => 'form-control']
             ])
@@ -62,8 +69,16 @@ class MycontactsController extends AbstractController
                 'required' => false
             ])
             ->add('dateNaissance', DateType::class, [
-                'attr' => ['class' => 'form-control'],
-                'required' => false
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'required' => false,
             ])
             ->add('estActif', CheckboxType::class, [
                 'required' => false,
@@ -78,27 +93,28 @@ class MycontactsController extends AbstractController
             $em->persist($personne);
             $em->flush();
 
+            $this->addFlash("contactFlashMSG", "Enregistrement effectué");
             return $this->redirectToRoute('app_mycontacts');
         }
 
         return $this->render('default/backend/myContacts/personnesForm.html.twig', [
-            'controller_name' => 'MyerpController',
+            'controller_name' => 'MyHomeERPController',
             'form' => $form->createView()
         ]);
     }
 
     /**
      * @Route("/societes/ajout", name="app_societes_ajout")
-     * @Route("/societes/{id<[0-9+]>}/edit", name="app_societes_edit", methods={"GET", "PUT"})
+     * @Route("/societes/{id<[0-9+]>}/edit", name="app_societes_edit", methods={"GET", "POST"})
      */
-    public function societeForm(?Societe $societe,SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
+    public function societeForm(?int $id,SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
     {
-        /*$societe = new Societe();
+        $societe = new Societe();
         if (isset($id)) {
             $societe = $societeRepo->find($id);
-        }*/
+        }
 
-        $form = $this->createFormBuilder($societe)      
+        $form = $this->createFormBuilder($societe)
             ->add('imageLogo', VichImageType::class, [
                 'required' => false,
                 'allow_delete' => true,
@@ -138,11 +154,12 @@ class MycontactsController extends AbstractController
             $em->persist($societe);
             $em->flush();
 
+            $this->addFlash("contactFlashMSG", "Enregistrement effectué");
             return $this->redirectToRoute('app_mycontacts');
         }
 
         return $this->render('default/backend/myContacts/societesForm.html.twig', [
-            'controller_name' => 'MyerpController',
+            'controller_name' => 'MyHomeERPController',
             'form' => $form->createView()
         ]);
     }
@@ -157,6 +174,7 @@ class MycontactsController extends AbstractController
             $em->flush();
         }
 
+        $this->addFlash("contactFlashMSG", "Enregistrement supprimé");
         return $this->redirectToRoute('app_mycontacts');
     }
 
@@ -168,9 +186,13 @@ class MycontactsController extends AbstractController
         if ($this->isCsrfTokenValid('societe_supprime_' . $societe->getId(), $requete->request->get('csrf_token'))) {
             $em->remove($societe);
             $em->flush();
+            
+            $this->addFlash("contactFlashMSG", "Enregistrement supprimé");
+            return $this->redirectToRoute('app_mycontacts');
         }
-
-        return $this->redirectToRoute('app_mycontacts');
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
     }
 
 }

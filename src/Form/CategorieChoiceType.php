@@ -17,6 +17,7 @@ class CategorieChoiceType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $Categories = array();
+        $Categories["--- Sélectionnez une catégorie ---"] = '-1';
         foreach($this->CategoriesList as $Categorie) {
             $Categories[$Categorie->getNom()] = $Categorie->getId();
         }

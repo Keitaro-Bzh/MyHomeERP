@@ -48,7 +48,7 @@ class Banque
     private $codeGuichet;
 
     /**
-     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="Banque", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="banque", orphanRemoval=true)
      */
     private $comptes;
 

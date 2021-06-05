@@ -17,6 +17,7 @@ class SocieteBanqueChoiceType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $societes = array();
+        $societes["--- Sélectionnez une banque ---"] = '-1';
         foreach($this->societesList as $societe) {
             $societes[$societe->getNom()] = $societe->getId();
         }

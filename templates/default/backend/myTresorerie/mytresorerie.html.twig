@@ -13,8 +13,9 @@
         <header class="panel-heading">
             <h2 class="panel-title">LISTE DES COMPTES</h2>
             <div class="panel-actions">
-                <a href="{{ path('app_myTresorerie_operation') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-credit-card" aria-hidden="true"></i> OPERATION</button></a>
-                <a href="{{ path('app_myTresorerie_virement') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-refresh" aria-hidden="true"></i> VIREMENT</button></a>
+                <a href="{{ path('app_myTresorerie_operation_debit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
+                <a href="{{ path('app_myTresorerie_operation_credit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
+                <a href="{{ path('app_myTresorerie_virement') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
                 <a href="{{ path('app_myTresorerie_retrait') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
             </div>
         </header>
@@ -22,186 +23,56 @@
             <div class="col-md-12">
                 <div class="col-md-12">
                     <section class="panel">
+                        {% for typeCompte in typesCompte %}
+                        {% set nbCompte_TypeCompte = 0 %}
                         <div class="panel-body">
                             <section class="panel">
-                                <h3 class="panel-title">Comptes Courants</h3>
+                                <h3 class="panel-title">{{ typeCompte.nom }}</h3>
                                 <div class="panel-body">
-                                    <div class="col-lg-4 col-sm-6">
-                                        <section class="panel panel-featured panel-featured-primary">
-                                            <header class="panel-heading">
-                                                <h5><a href="{{ path('app_myTresorerie_compte') }}">COMPTE CHEQUE</a></h5>
-                                                <p class="panel-subtitle">CREDIT AGRICOLE</p>
-                                            </header>
-                                            <div class="panel-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover mb-none">
-                                                        <thead>
-                                                            <th></th>
-                                                            <th>SOLDE</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Pointé</td>
-                                                                <td>1200 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Réel</td>
-                                                                <td>980 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Atterrissage</td>
-                                                                <td>-300 €</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                    {% for compte in comptes %}
+                                        {% if compte.typeCompte == typeCompte.id %}
+                                            {% set nbCompte_TypeCompte = 1 %}
+                                            <div class="col-lg-4 col-sm-6">
+                                                <section class="panel panel-featured panel-featured-primary">
+                                                    <header class="panel-heading">
+                                                        <h5><a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte.id }) }}">[{{ compte.banque.societe.nom|upper }}] {{ compte.libelle }}</a></h5>
+                                                        <p class="panel-subtitle">{{ compte.titulaire.nom }} {{ compte.titulaire.prenom }} {% if compte.Cotitulaire %} - {{ compte.Cotitulaire.nom }} {{ compte.Cotitulaire.prenom }}{% endif %}</p>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-hover mb-none">
+                                                                <thead>
+                                                                    <th></th>
+                                                                    <th>SOLDE</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>Pointé</td>
+                                                                        <td>1200 €</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Réel</td>
+                                                                        <td>980 €</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </section>
                                             </div>
-                                        </section>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-6">
-                                        <section class="panel panel-featured panel-featured-primary">
-                                            <header class="panel-heading">
-                                                <h5><a href="#">COMPTE JOINT</a></h5>
-                                                <p class="panel-subtitle">BOURSORAMA</p>
-                                            </header>
-                                            <div class="panel-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover mb-none">
-                                                        <thead>
-                                                            <th></th>
-                                                            <th>SOLDE</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Pointé</td>
-                                                                <td>1200 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Réel</td>
-                                                                <td>980 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Atterrissage</td>
-                                                                <td>-300 €</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-6">
-                                        <section class="panel panel-featured panel-featured-primary">
-                                            <header class="panel-heading">
-                                                <h5><a href="#">BOURSORAMA ESSENTIEL</a></h5>
-                                                <p class="panel-subtitle">BOURSORAMA</p>
-                                            </header>
-                                            <div class="panel-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover mb-none">
-                                                        <thead>
-                                                            <th></th>
-                                                            <th>SOLDE</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Pointé</td>
-                                                                <td>1200 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Réel</td>
-                                                                <td>980 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Atterrissage</td>
-                                                                <td>-300 €</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if nbCompte_TypeCompte == 0 %}
+                                        <div class="alert alert-success">
+                                            Aucun compte n'a été enregistré pour le moment.
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </section>
                         </div>
-                        <div class="panel-body">
-                            <section class="panel">
-                                <h3 class="panel-title">Comptes d'Epargne</h3>
-                                <div class="panel-body">
-                                    <div class="col-lg-4 col-sm-6">
-                                        <section class="panel panel-featured panel-featured-default">
-                                            <header class="panel-heading">
-                                                <h5><a href="#">LIVRET A</a></h5>
-                                                <p class="panel-subtitle">BOURSORAMA</p>
-                                            </header>
-                                            <div class="panel-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover mb-none">
-                                                        <thead>
-                                                            <th></th>
-                                                            <th>SOLDE</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Pointé</td>
-                                                                <td>1200 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Réel</td>
-                                                                <td>980 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Atterrissage</td>
-                                                                <td>-300 €</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-6">
-                                        <section class="panel panel-featured panel-featured-default">
-                                            <header class="panel-heading">
-                                                <h5><a href="#">LIVRET A</a></h5>
-                                                <p class="panel-subtitle">BOURSORAMA</p>
-                                            </header>
-                                            <div class="panel-body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover mb-none">
-                                                        <thead>
-                                                            <th></th>
-                                                            <th>SOLDE</th>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Pointé</td>
-                                                                <td>1200 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Réel</td>
-                                                                <td>980 €</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Atterrissage</td>
-                                                                <td>-300 €</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
+                        {% endfor %}
                     </section>
                 </div>
-                <div class="col-md-8">
-
-                </div>
-
             </div>
         </div>
     </section>
