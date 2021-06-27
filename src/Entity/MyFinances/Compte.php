@@ -32,12 +32,12 @@ class Compte
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotNull(message="Le libellé du compte est obligatoire")
      */
     private $libelle;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Assert\NotNull(message="Le libellé du compte est obligatoire")
      */
     private $numero;
 
@@ -99,6 +99,11 @@ class Compte
      * @ORM\OneToMany(targetEntity=ContratFacturation::class, mappedBy="Compte", orphanRemoval=true)
      */
     private $contratFacturations;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $archive;
 
     public function __construct()
     {
@@ -375,6 +380,18 @@ class Compte
                 $contratFacturation->setCompte(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getArchive(): ?bool
+    {
+        return $this->archive;
+    }
+
+    public function setArchive(?bool $archive): self
+    {
+        $this->archive = $archive;
 
         return $this;
     }

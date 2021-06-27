@@ -45,7 +45,7 @@ class User implements UserInterface
      * @ORM\Column(type="boolean", nullable=true)
      */
 
-    private $estActif;
+    private $archive;
 
     /**
      * @ORM\Column(type="json")
@@ -137,14 +137,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getEstActif(): ?string
+    public function getArchive(): ?string
     {
-        return $this->estActif;
+        return $this->archive;
     }
 
-    public function setEstActif(?string $estActif): self
+    public function setArchive(?string $archive): self
     {
-        $this->avatar = $estActif;
+        $this->archive = $archive;
 
         return $this;
     }

@@ -12,7 +12,7 @@ class SocieteBanqueChoiceType extends AbstractType
 
     public function __construct(SocieteRepository $societeRepo)
     {
-        $this->societesList = $societeRepo->findby(['estBanque' => '1']);
+        $this->societesList = $societeRepo->findBanque();
     }
     public function configureOptions(OptionsResolver $resolver): void
     {

@@ -19,7 +19,28 @@ class SocieteRepository extends ServiceEntityRepository
         parent::__construct($registry, Societe::class);
     }
 
+    public function findActif()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.archive is null')
+            ->orWhere('c.archive = 0')
+            ->orderBy('c.nom', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
+    public function findBanque()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.estBanque = true')
+            ->andWhere('c.archive is null')
+            ->orWhere('c.archive = 0')
+            ->orderBy('c.nom', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return Societe[] Returns an array of Societe objects
     //  */

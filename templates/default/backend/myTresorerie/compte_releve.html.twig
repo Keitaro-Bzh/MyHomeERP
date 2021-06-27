@@ -48,10 +48,10 @@
                 </div>
             </div>
             <div class="col-md-2 text-center">  
-                <a href="{{ path('app_myTresorerie_operation_debit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
-                <a href="{{ path('app_myTresorerie_operation_credit') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
-                <a href="{{ path('app_myTresorerie_virement') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
-                <a href="{{ path('app_myTresorerie_retrait') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
+                <a href="{{ path('app_myTresorerie_compte_operation_debit_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
+                <a href="{{ path('app_myTresorerie_compte_operation_credit_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
+                <a href="{{ path('app_myTresorerie_compte_virement_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
+                <a href="{{ path('app_myTresorerie_compte_retrait_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
             </div>
         </div>
     </section>

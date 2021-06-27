@@ -10,7 +10,13 @@
             <h2 class="panel-title">VIREMENT INTERNE</h2>
             <p class="panel-subtitle">Formulaire de saisie </p>
             <div class="panel-actions">
-               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button></a>
+                {% if compte == "-1" %}
+                <a href="{{ path('app_myTresorerie_index') }}">
+                {% else %}
+                <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte }) }}">
+                {% endif %}
+                    <button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button>
+                </a>
                 
             </div>
         </header>

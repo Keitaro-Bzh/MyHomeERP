@@ -10,28 +10,29 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Form\PersonneChoiceType;
-use App\Form\SocieteBanqueChoiceType;
 use App\Entity\MyFinances\Operation;
-use App\Repository\MyFinances\CompteRepository;
-use App\Repository\MyFinances\TypeCompteRepository;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use App\Form\CompteChoiceType;
 use App\Form\ModePaiementChoiceType;
 use App\Form\SousCategorieChoiceType;
+use App\Form\PersonneChoiceType;
+use App\Form\SocieteBanqueChoiceType;
+use App\Form\SocieteChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
 use App\Repository\MyContacts\SocieteRepository;
 use App\Repository\MyFinances\CreditRepository;
 use App\Repository\MyFinances\ModePaiementRepository;
 use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\SousCategorieRepository;
+use App\Repository\MyFinances\CompteRepository;
+use App\Repository\MyFinances\TypeCompteRepository;
 use DateTime;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class MyTresorerieController extends AbstractController
 {
@@ -51,7 +52,7 @@ class MyTresorerieController extends AbstractController
     }
 
     /**
-     * @Route("/tresorerie/comptes/{id<[0-9+]>}", name="app_myTresorerie_compte_releve")
+     * @Route("/tresorerie/comptes/{id}", name="app_myTresorerie_compte_releve")
      */
     public function mytresorerie_compte(int $id,OperationRepository $operationRepo, CompteRepository $compteRepo): Response
     {
@@ -70,12 +71,22 @@ class MyTresorerieController extends AbstractController
     /**
      * @Route("/tresorerie/operation/credit", name="app_myTresorerie_operation_credit")
      * @Route("/tresorerie/operation/credit/{id}", name="app_myTresorerie_operation_credit_edit")
+     * @Route("/tresorerie/compte/{idCompte}/credit/debit", name="app_myTresorerie_compte_operation_credit_add")
      */
-    public function mytresorerie_operation_credit(?int $id,SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
+    public function mytresorerie_operation_credit(?int $id,?int $idCompte, SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
     {
         $operation = new Operation();
+ 
+        // On va gérer une particularité qui va sélectioner le compte uniquement s'il s'agit d'une opération en cours
+        // ou si on déclenche l'enregistrement d'un mouvement depuis un relevé
         if (isset($id)) {
             $operation = $operationRepo->find($id);
+            $idCompte = $operation->getCompte() ?  $operation->getCompte()->getId() : null;
+        }
+        else {
+            if (!isset($idCompte)) {
+                $idCompte = "-1";
+            }
         }
 
         $form = $this->createFormBuilder($operation)
@@ -101,7 +112,7 @@ class MyTresorerieController extends AbstractController
             ->add('compteID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-                'data' => $operation->getCompte() ?  $operation->getCompte()->getId() : null
+                'data' => $idCompte
             ])
             ->add('modePaiementTrigramme', ChoiceType::class, [
                 'choices' => array(
@@ -127,17 +138,17 @@ class MyTresorerieController extends AbstractController
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
-            ->add('societeID',SocieteBanqueChoiceType::class, [
+            ->add('societeID',SocieteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
-                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : null
+                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : "-1"
             ])            
             ->add('personneID',PersonneChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
-                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : null
+                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : "-1"
             ])   
             ->add('categorieID',SousCategorieChoiceType::class, [
                 'mapped' => false,
@@ -190,19 +201,30 @@ class MyTresorerieController extends AbstractController
 
         return $this->render('default/backend/myTresorerie/operation_credit.html.twig', [
             'controller_name' => 'MyTresorerieController',
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'compte' => $idCompte
         ]);
     }
 
     /**
      * @Route("/tresorerie/operation/debit", name="app_myTresorerie_operation_debit")
      * @Route("/tresorerie/operation/debit/{id}", name="app_myTresorerie_operation_debit_edit")
+     * @Route("/tresorerie/compte/{idCompte}/operation/debit", name="app_myTresorerie_compte_operation_debit_add")
      */
-    public function mytresorerie_debit(?int $id,SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
+    public function mytresorerie_debit(?int $id,?int $idCompte,SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
     {
         $operation = new Operation();
+
+        // On va gérer une particularité qui va sélectioner le compte uniquement s'il s'agit d'une opération en cours
+        // ou si on déclenche l'enregistrement d'un mouvement depuis un relevé
         if (isset($id)) {
             $operation = $operationRepo->find($id);
+            $idCompte = $operation->getCompte() ?  $operation->getCompte()->getId() : null;
+        }
+        else {
+            if (!isset($idCompte)) {
+                $idCompte = "-1";
+            }
         }
 
         $form = $this->createFormBuilder($operation)
@@ -228,7 +250,7 @@ class MyTresorerieController extends AbstractController
             ->add('compteID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-                'data' => $operation->getCompte() ?  $operation->getCompte()->getId() : null
+                'data' => $idCompte
             ])
             ->add('modePaiementID', ModePaiementChoiceType::class, [
                 'mapped' => false,
@@ -249,17 +271,17 @@ class MyTresorerieController extends AbstractController
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
-            ->add('societeID',SocieteBanqueChoiceType::class, [
+            ->add('societeID',SocieteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
-                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : null
+                'data' => $operation->getSociete() ?  $operation->getSociete()->getId() : "-1"
             ])            
             ->add('personneID',PersonneChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
-                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : null
+                'data' => $operation->getPersonne() ?  $operation->getPersonne()->getId() : "-1"
             ])   
             ->add('categorieID',SousCategorieChoiceType::class, [
                 'mapped' => false,
@@ -332,15 +354,17 @@ class MyTresorerieController extends AbstractController
 
         return $this->render('default/backend/myTresorerie/operation_debit.html.twig', [
             'controller_name' => 'MyTresorerieController',
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'compte' => $idCompte
         ]);
     }
 
     /**
      * @Route("/tresorerie/operation/virement", name="app_myTresorerie_virement")
-     * @Route("/tresorerie/operation/virement/{id<^\d{1,10}>}", name="app_myTresorerie_virement_edit", methods={"GET", "POST"})
+     * @Route("/tresorerie/operation/virement/{id}", name="app_myTresorerie_virement_edit", methods={"GET", "POST"})
+     * @Route("/tresorerie/compte/{idCompte}/virement", name="app_myTresorerie_compte_virement_add")
      */
-    public function mytresorerie_virement(?int $id,CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
+    public function mytresorerie_virement(?int $id,?int $idCompte, CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
     {
         // l'id correspond à l'id de l'operation du relevé. Il va donc falloir charger le formulaire
         // en fonction de l'id_virement enregistré lors de l'enregistrement initial.
@@ -348,7 +372,16 @@ class MyTresorerieController extends AbstractController
             $operationDebit = $operationRepo->find($id);
             $operationDebit = $operationRepo->findOperationVirementDebit($operationDebit->getVirementID());
             $operationCredit = $operationRepo->findOperationVirementCredit($operationDebit->getVirementID());
+            $idCompte = $operationDebit->getCompte() ? $operationDebit->getCompte()->getId() : null;
         }
+        // On va gérer une particularité qui va sélectioner le compte uniquement s'il s'agit d'une opération en cours
+        // ou si on déclenche l'enregistrement d'un mouvement depuis un relevé
+        else {
+            if (!isset($idCompte)) {
+                $idCompte = "-1";
+            }
+        }
+
 
         $form = $this->createFormBuilder()
             ->add('date', DateType::class, [
@@ -366,7 +399,7 @@ class MyTresorerieController extends AbstractController
             ->add('compteDebitID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-                'data' => isset($operationDebit) ? $operationDebit->getCompte()->getId() : ''
+                'data' => $idCompte
             ])
             ->add('compteCreditID', CompteChoiceType::class, [
                 'mapped' => false,
@@ -427,19 +460,30 @@ class MyTresorerieController extends AbstractController
 
         return $this->render('default/backend/myTresorerie/operation_virement.html.twig', [
             'controller_name' => 'MyTresorerieController',
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'compte' => $idCompte
         ]);
     }
 
     /**
      * @Route("/tresorerie/operation/retrait", name="app_myTresorerie_retrait")
-     * @Route("/tresorerie/operation/retrait/{id<^\d{1,10}>}", name="app_myTresorerie_retrait_edit", methods={"GET", "POST"})
+     * @Route("/tresorerie/operation/retrait/{id}", name="app_myTresorerie_retrait_edit", methods={"GET", "POST"})
+     * @Route("/tresorerie/compte/{idCompte}/retrait", name="app_myTresorerie_compte_retrait_add")
      */
-    public function mytresorerie_retrait(?int $id,CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
+    public function mytresorerie_retrait(?int $id,?int $idCompte,CompteRepository $compteRepo, OperationRepository $operationRepo, Request $requete,EntityManagerInterface $em): Response
     {
         $operation = new Operation;
+
+        // On va gérer une particularité qui va sélectioner le compte uniquement s'il s'agit d'une opération en cours
+        // ou si on déclenche l'enregistrement d'un mouvement depuis un relevé
         if (isset($id)) {
             $operation = $operationRepo->find($id);
+            $idCompte = $operation->getCompte() ?  $operation->getCompte()->getId() : null;
+        }
+        else {
+            if (!isset($idCompte)) {
+                $idCompte = "-1";
+            }
         }
 
         $form = $this->createFormBuilder($operation)
@@ -461,7 +505,7 @@ class MyTresorerieController extends AbstractController
             ->add('compteID', CompteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-                'data' => ($operation->getCompte()) ? $operation->getCompte()->getId() : -1
+                'data' => $idCompte
             ])
             ->add('debit', IntegerType::class, [
                 'attr' => ['class' => 'form-control'],
@@ -494,12 +538,13 @@ class MyTresorerieController extends AbstractController
 
         return $this->render('default/backend/myTresorerie/operation_retrait.html.twig', [
             'controller_name' => 'MyTresorerieController',
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'compte' => $idCompte
         ]);
     }
 
     /**
-     * @Route("/tresorerie/operation/pointage/{id<^\d{1,10}>}", name="app_operation_pointage", methods ="UPDATE")
+     * @Route("/tresorerie/operation/pointage/{id}", name="app_operation_pointage", methods ="UPDATE")
      */
     public function operationPointage(Operation $operation, Request $requete, EntityManagerInterface $em): Response
     {
@@ -521,7 +566,7 @@ class MyTresorerieController extends AbstractController
     }
 
     /**
-     * @Route("/tresorerie/operation/delete/{id<^\d{1,10}>}", name="app_operation_del", methods ="DELETE")
+     * @Route("/tresorerie/operation/delete/{id}", name="app_operation_del", methods ="DELETE")
      */
     public function operationDelete(Operation $operation,OperationRepository $operationRepo, Request $requete, EntityManagerInterface $em): Response
     {

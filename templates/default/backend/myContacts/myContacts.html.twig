@@ -14,8 +14,11 @@
         </header>
 
         <div class="panel-body">
-            {% for flashError in app.flashes('contactFlashMSG') %}
-                <div class="alert alert-info" role="alert">{{ flashError }}</div>
+            {% for flashError in app.flashes('successMSG') %}
+                <div class="alert alert-success" role="alert">{{ flashError }}</div>
+            {% endfor %}
+            {% for flashError in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashError }}</div>
             {% endfor %}
             <div class="tabs">
                 <ul class="nav nav-tabs">
@@ -49,13 +52,36 @@
                                                 <td><a href="mailto:{{ personne.email|e }}">{{ personne.email|e }}</a></td>
                                                 <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_personnes_edit', { 'id' : personne.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('La suppression d\'une personne entraine la suppression de tous les enregistrements liés. \n\nEtes vous sur de vouloir continuer?') && document.getElementById('js-personne-effacer-{{personne.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                                                    <form id="js-personne-effacer-{{personne.id}}"  action="{{ path('app_personnes_del', { 'id' : personne.id }) }}" method="post" style="display:none;">
-                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('personne_supprime_' ~ personne.id) }}">
-                                                        <input type="hidden" name="_method" value="DELETE">
-                                                    </form>
+                                                    <a class="modal-basic" href="#modalBasicPersonne{{ personne.id }}"><i class="fa fa-trash-o"></i></a>
                                                 </td>
                                             </tr>
+
+                                            {# Fenetre modèle pour valider la suppression d'une ficher personne #}
+                                            <div id="modalBasicPersonne{{ personne.id }}" class="modal-block modal-block-primary mfp-hide">
+                                                <section class="panel">
+                                                    <header class="panel-heading">
+                                                        <h2 class="panel-title">Etes-vous sur de vouloir supprimer -- {{ personne.nom }} {{ personne.prenom }} -- ?</h2>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <p>
+                                                            La suppression d'une personne peut impacter les autres modules.
+                                                            En cas de doute, annuler votre action et archiver la fiche personne.
+                                                        </p>
+                                                    </div>
+                                                    <footer class="panel-footer">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-right">
+                                                                <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                                <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-personne-effacer-{{personne.id}}').submit();">CONFIRMER</button>
+                                                                <form id="js-personne-effacer-{{personne.id}}"  action="{{ path('app_personnes_del', { 'id' : personne.id }) }}" method="post" style="display:none;">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token('personne_supprime_' ~ personne.id) }}">
+                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </footer>
+                                                </section>
+                                            </div>
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -88,16 +114,41 @@
                                                 <td><a href="{{ societe.url|e }}" target="_blank">{{ societe.url|e }}</a></td>
                                                 <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_societes_edit', { 'id' : societe.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                    <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-societe-effacer-{{societe.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                                                    <form id="js-societe-effacer-{{societe.id}}"  action="{{ path('app_societes_del', { 'id' : societe.id }) }}" method="post" style="display:none;">
-                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('societe_supprime_' ~ societe.id) }}">
-                                                        <input type="hidden" name="_method" value="DELETE">
-                                                    </form>
+                                                    <a class="modal-basic" href="#modalBasicSociete{{ societe.id }}"><i class="fa fa-trash-o"></i></a>
                                                 </td>
                                             </tr>
+
+                                            {# Fenetre modèle pour valider la suppression d'une ficher societe #}
+                                            <div id="modalBasicSociete{{ societe.id }}" class="modal-block modal-block-primary mfp-hide">
+                                                <section class="panel">
+                                                    <header class="panel-heading">
+                                                        <h2 class="panel-title">Etes-vous sur de vouloir supprimer la société -- {{ societe.nom }} -- ?</h2>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <p>
+                                                            La suppression d'une societe peut impacter les autres modules.
+                                                            En cas de doute, annuler votre action et archiver la fiche societe.
+                                                        </p>
+                                                    </div>
+                                                    <footer class="panel-footer">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-right">
+                                                                <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                                <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-societe-effacer-{{societe.id}}').submit();">CONFIRMER</button>
+                                                                <form id="js-societe-effacer-{{societe.id}}"  action="{{ path('app_societes_del', { 'id' : societe.id }) }}" method="post" style="display:none;">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token('societe_supprime_' ~ societe.id) }}">
+                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </footer>
+                                                </section>
+                                            </div>
                                     {% endfor %}
                                     </tbody>
                                 </table>
+
+
                             {% else %}
                                 <div class="alert alert-success">
                                     Aucune société n'a été enregistrée pour le moment.
@@ -108,5 +159,10 @@
                 </div>
             </div>
         </div>
+    </div>
     </section>
+{% endblock %}
+
+{% block footer_script %}
+    <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
 {% endblock %}

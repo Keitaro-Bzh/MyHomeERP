@@ -49,8 +49,14 @@ class Banque
 
     /**
      * @ORM\OneToMany(targetEntity=Compte::class, mappedBy="banque", orphanRemoval=true)
+     * @ORM\OrderBy({"libelle" = "ASC"})
      */
     private $comptes;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $archive;
 
     public function __construct()
     {
@@ -136,6 +142,18 @@ class Banque
                 $compte->setBanque(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getArchive(): ?bool
+    {
+        return $this->archive;
+    }
+
+    public function setArchive(?bool $archive): self
+    {
+        $this->archive = $archive;
 
         return $this;
     }

@@ -19,6 +19,18 @@ class PersonneRepository extends ServiceEntityRepository
         parent::__construct($registry, Personne::class);
     }
 
+    public function findActif()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.archive is null')
+            ->orWhere('c.archive = 0')
+            ->orderBy('c.nom', 'ASC')
+            ->orderBy('c.prenom', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Personne[] Returns an array of Personne objects
     //  */

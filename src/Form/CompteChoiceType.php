@@ -14,8 +14,8 @@ class CompteChoiceType extends AbstractType
 
     public function __construct(BanqueRepository $banqueRepo, CompteRepository $CompteRepo)
     {
-        $this->banquesList = $banqueRepo->findAll();
-        $this->comptesList = $CompteRepo->findAll();
+        $this->banquesList = $banqueRepo->findActif();
+        //$this->comptesList = $CompteRepo->findAll();
     }
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -26,7 +26,11 @@ class CompteChoiceType extends AbstractType
             $tabCompte = array();
             $comptes = $banque->getComptes()->toArray();
             foreach ($comptes as $compte) {
-                $tabCompte[$compte->getLibelle() . ' (' . $compte->getTitulaire()->getNom() . ' ' . $compte->getTitulaire()->getPrenom() . ')' ] = $compte->getId(); 
+                $listeTitulaire = $compte->getTitulaire()->getPrenom() . ' ' . substr($compte->getTitulaire()->getNom(),0,1);
+                if ($compte->getCoTitulaire()) {
+                    $listeTitulaire = $listeTitulaire . '. / ' . $compte->getCoTitulaire()->getPrenom() . ' ' . substr($compte->getCoTitulaire()->getNom(),0,1);
+                }
+                $tabCompte[$compte->getLibelle() . ' (' . $listeTitulaire . '.)' ] = $compte->getId(); 
             }
             $listeComptes[$banque->getSociete()->getNom()] = $tabCompte;
         }

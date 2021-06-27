@@ -25,7 +25,11 @@
                         <td><a href="{{ banque.societe.url }}" target="_blank">{{ banque.societe.url }}</a></td>
                         <td class="actions text-center">
                             <a href="{{ path('app_myTresorerie_referentiel_banque_edit', { 'id' : banque.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                            <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                            <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-banque-effacer-{{banque.id}}').submit();">CONFIRMER</button>
+                            <form id="js-banque-effacer-{{banque.id}}"  action="{{ path('app_myTresorerie_referentiel_banques_del', { 'id' : banque.id }) }}" method="post" style="display:none;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token('banque_supprime_' ~ banque.id) }}">
+                                <input type="hidden" name="_method" value="DELETE">
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}

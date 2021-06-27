@@ -16,6 +16,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class MyContactsController extends AbstractController
@@ -25,8 +26,8 @@ class MyContactsController extends AbstractController
      */
     public function app_mycontacts(PersonneRepository $personneRepo,SocieteRepository $societeRepo): Response
     {
-        $personnes = $personneRepo->findAll();
-        $societes = $societeRepo->findAll();
+        $personnes = $personneRepo->findActif();
+        $societes = $societeRepo->findActif();
         return $this->render('default/backend/myContacts/myContacts.html.twig', [
             'controller_name' => 'MyHomeERPController',
             'tablePersonnes' => $personnes,
@@ -64,6 +65,18 @@ class MyContactsController extends AbstractController
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
+            ->add('libelle_adresse', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('code_postal', IntegerType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('ville', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
             ->add('email', EmailType::class, [
                 'attr' => ['class' => 'form-control'],
                 'required' => false
@@ -80,9 +93,8 @@ class MyContactsController extends AbstractController
                 ],
                 'required' => false,
             ])
-            ->add('estActif', CheckboxType::class, [
-                'required' => false,
-                'data' => true
+            ->add('archive', CheckboxType::class, [
+                'required' => false
             ])
             ->getform()
         ;
@@ -93,7 +105,7 @@ class MyContactsController extends AbstractController
             $em->persist($personne);
             $em->flush();
 
-            $this->addFlash("contactFlashMSG", "Enregistrement effectué");
+            $this->addFlash("successMSG", "Enregistrement effectué");
             return $this->redirectToRoute('app_mycontacts');
         }
 
@@ -140,10 +152,21 @@ class MyContactsController extends AbstractController
                 'attr' => ['data-plugin-ios-switch'],
                 'required' => false
             ])
-            ->add('estActif', CheckboxType::class, [
+            ->add('libelle_adresse', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('code_postal', IntegerType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('ville', TextType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('archive', CheckboxType::class, [
                 'attr' => ['data-plugin-ios-switch'],
                 'required' => false,
-                'data' => true
             ])
             ->getform()
         ;
@@ -154,7 +177,7 @@ class MyContactsController extends AbstractController
             $em->persist($societe);
             $em->flush();
 
-            $this->addFlash("contactFlashMSG", "Enregistrement effectué");
+            $this->addFlash("successMSG", "Enregistrement effectué");
             return $this->redirectToRoute('app_mycontacts');
         }
 
@@ -170,12 +193,20 @@ class MyContactsController extends AbstractController
     public function personneDelete(Personne $personne, Request $requete, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('personne_supprime_' . $personne->getId(), $requete->request->get('csrf_token'))) {
-            $em->remove($personne);
-            $em->flush();
-        }
+            try {
+                $em->remove($personne);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - La personne est référencée dans un autre module. Procédez à un archivage à la place");
+            }
 
-        $this->addFlash("contactFlashMSG", "Enregistrement supprimé");
-        return $this->redirectToRoute('app_mycontacts');
+            return $this->redirectToRoute('app_mycontacts');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
     }
 
     /**
@@ -184,10 +215,15 @@ class MyContactsController extends AbstractController
     public function societeDelete(Societe $societe, Request $requete, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('societe_supprime_' . $societe->getId(), $requete->request->get('csrf_token'))) {
-            $em->remove($societe);
-            $em->flush();
+            try {
+                $em->remove($societe);
+                $em->flush();           
             
-            $this->addFlash("contactFlashMSG", "Enregistrement supprimé");
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - La société est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+            
             return $this->redirectToRoute('app_mycontacts');
         }
         else {

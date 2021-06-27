@@ -66,7 +66,7 @@ class Societe
     /**
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $estActif;
+    private $archive;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -87,6 +87,21 @@ class Societe
      * @ORM\OneToMany(targetEntity=Contrat::class, mappedBy="Societe", orphanRemoval=true)
      */
     private $societes_contrats;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $libelle_adresse;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $code_postal;
+
+    /**
+     * @ORM\Column(type="string", length=150, nullable=true)
+     */
+    private $ville;
 
     public function __construct()
     {
@@ -185,14 +200,14 @@ class Societe
         return $this;
     }
 
-    public function getEstActif(): ?bool
+    public function getArchive(): ?bool
     {
-        return $this->estActif;
+        return $this->archive;
     }
 
-    public function setEstActif(?bool $estActif): self
+    public function setArchive(?bool $archive): self
     {
-        $this->estActif = $estActif;
+        $this->archive = $archive;
 
         return $this;
     }
@@ -295,6 +310,42 @@ class Societe
                 $societesContrat->setSociete(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLibelleAdresse(): ?string
+    {
+        return $this->libelle_adresse;
+    }
+
+    public function setLibelleAdresse(?string $libelle_adresse): self
+    {
+        $this->libelle_adresse = $libelle_adresse;
+
+        return $this;
+    }
+
+    public function getCodePostal(): ?int
+    {
+        return $this->code_postal;
+    }
+
+    public function setCodePostal(?int $code_postal): self
+    {
+        $this->code_postal = $code_postal;
+
+        return $this;
+    }
+
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    public function setVille(?string $ville): self
+    {
+        $this->ville = $ville;
 
         return $this;
     }

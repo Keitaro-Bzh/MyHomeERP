@@ -128,12 +128,12 @@ class Echeance
     private $echeances_contratFacturation;
 
     /**
-     * @ORM\Column(type="string", length=1)
+     * @ORM\Column(type="string", length=1, nullable=true)
      */
     private $frequence_paiement;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $frequence_nombre_paiement;
 

@@ -12,7 +12,7 @@ class PersonneChoiceType extends AbstractType
 
     public function __construct(PersonneRepository $PersonneRepo)
     {
-        $this->PersonnesList = $PersonneRepo->findAll();
+        $this->PersonnesList = $PersonneRepo->findActif();
     }
     public function configureOptions(OptionsResolver $resolver): void
     {

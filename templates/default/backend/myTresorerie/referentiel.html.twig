@@ -7,7 +7,6 @@
 {% block contenu_site %}
     <section class="panel">
         <header class="panel-heading">
-        
             <div class="panel-actions">
                 <a href="{{ path('app_myTresorerie_referentiel_banque_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> BANQUE</button></a>
                 <a href="{{ path('app_myTresorerie_referentiel_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> COMPTE</button></a>
@@ -19,7 +18,12 @@
             <h2 class="panel-title">PARAMETRAGE DES REFERENTIELS</h2>
         </header>
         <div class="panel-body">
-        
+            {% for flashError in app.flashes('successMSG') %}
+                <div class="alert alert-success" role="alert">{{ flashError }}</div>
+            {% endfor %}
+            {% for flashError in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+            {% endfor %}
             <div class="tabs tabs-vertical tabs-left">
                 <ul class="nav nav-tabs">
                     <li class="active">

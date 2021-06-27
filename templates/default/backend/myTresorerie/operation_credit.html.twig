@@ -14,7 +14,13 @@
             <h2 class="panel-title">OPERATION BANCAIRE [CREDIT]</h2>
             <p class="panel-subtitle">Formulaire de saisie </p>
             <div class="panel-actions">
-               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button></a>
+                {% if compte == "-1" %}
+                <a href="{{ path('app_myTresorerie_index') }}">
+                {% else %}
+                <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte }) }}">
+                {% endif %}
+                    <button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button>
+                </a>
             </div>
         </header>
         <div class="panel-body">
@@ -58,19 +64,19 @@
                             {{ form_widget(form.typeTiers) }}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="tiers">
                         <label class="col-md-2 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.tiers_libelle) }}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="societeID">
                         <label class="col-md-2 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.societeID) }}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="personneID">
                         <label class="col-md-2 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.personneID) }}
@@ -106,5 +112,31 @@
             </div>
         </div>
     </section>
-    {% block footer_Script %}{% endblock %}
+    {% block footer_Script %}
+    <script>
+        afficheChampTiers(document.getElementById("form_typeTiers").value);
+        document.getElementById("form_typeTiers").addEventListener("change", () => {
+            afficheChampTiers(document.getElementById("form_typeTiers").value);
+        })
+        document.getElementById("cheque").style.display = "none";
+
+        function afficheChampTiers (choix) {
+            if (choix == "L") {
+                document.getElementById("tiers").style.display = "block";
+                document.getElementById("personneID").style.display = "none";
+                document.getElementById("societeID").style.display = "none";
+            }
+            if (choix == "P") {
+                document.getElementById("personneID").style.display = "block";
+                document.getElementById("tiers").style.display = "none";
+                document.getElementById("societeID").style.display = "none";
+            }
+            if (choix == "S") {
+                document.getElementById("personneID").style.display = "none";
+                document.getElementById("tiers").style.display = "none";
+                document.getElementById("societeID").style.display = "block";
+            }
+        }
+    </script>
+    {% endblock %}
 {% endblock %}

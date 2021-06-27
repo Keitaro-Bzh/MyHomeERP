@@ -59,7 +59,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/banque/add", name="app_myTresorerie_referentiel_banque_add")
-     * @Route("/tresorerie/referentiel/banque/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_banque_edit")
+     * @Route("/tresorerie/referentiel/banque/edit/{id>}", name="app_myTresorerie_referentiel_banque_edit")
      */
     public function mytresorerie_referentiel_banque_form(?int $id,BanqueRepository $banqueRepo, SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -108,7 +108,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/compte/add", name="app_myTresorerie_referentiel_compte_add")
-     * @Route("/tresorerie/referentiel/compte/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_compte_edit")
+     * @Route("/tresorerie/referentiel/compte/edit/{id}", name="app_myTresorerie_referentiel_compte_edit")
      */
     public function mytresorerie_referentiel_compte_form(?int $id,PersonneRepository $personneRepo, CompteRepository $compteRepo, BanqueRepository $banqueRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -139,6 +139,7 @@ class MyTresorerieReferentielController extends AbstractController
             ])
             ->add('libelle', TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'required' => false
             ])
             ->add('numero',IntegerType::class, [
                 'attr' => ['class' => 'form-control'],
@@ -177,7 +178,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/categorie/add", name="app_myTresorerie_referentiel_categorie_add")
-     * @Route("/tresorerie/referentiel/categorie/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_categorie_edit")
+     * @Route("/tresorerie/referentiel/categorie/edit/{id}", name="app_myTresorerie_referentiel_categorie_edit")
      */
     public function mytresorerie_referentiel_categorie_form(?int $id,CategorieRepository $categorieRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -209,7 +210,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/sous_categorie/add", name="app_myTresorerie_referentiel_sous_categorie_add")
-     * @Route("/tresorerie/referentiel/sous_categorie/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_sous_categorie_edit")
+     * @Route("/tresorerie/referentiel/sous_categorie/edit/{id}", name="app_myTresorerie_referentiel_sous_categorie_edit")
      */
     public function mytresorerie_referentiel_souscategorie_form(?int $id,SousCategorieRepository $sousCategorieRepo, CategorieRepository $categorieRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -248,7 +249,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/type_compte/add", name="app_myTresorerie_referentiel_type_compte_add")
-     * @Route("/tresorerie/referentiel/type_compte/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_type_compte_edit")
+     * @Route("/tresorerie/referentiel/type_compte/edit/{id}", name="app_myTresorerie_referentiel_type_compte_edit")
      */
     public function mytresorerie_referentiel_typeCompte_form(?int $id, TypeCompteRepository $typeCompteRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -292,7 +293,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/mode_paiement/add", name="app_myTresorerie_referentiel_mode_paiement_add")
-     * @Route("/tresorerie/referentiel/mode_paiement/edit/{id<[0-9+]>}", name="app_myTresorerie_referentiel_mode_paiement_edit")
+     * @Route("/tresorerie/referentiel/mode_paiement/edit/{id}", name="app_myTresorerie_referentiel_mode_paiement_edit")
      */
     public function mytresorerie_referentiel_modePaiement_form(?int $id,CompteRepository $compteRepo, PersonneRepository $personneRepo, ModePaiementRepository $modePaiementeRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -338,4 +339,25 @@ class MyTresorerieReferentielController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/tresorerie/referentiel/banque/del/{id<[0-9+]>}", name="app_myTresorerie_referentiel_banques_del", methods ="DELETE")
+     */
+    public function mytresorerie_referentiel_banqueDelete(Banque $banque, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('banque_supprime_' . $banque->getId(), $requete->request->get('csrf_token'))) {
+            try {
+                $em->remove($banque);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - La banque est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+
+            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
 }

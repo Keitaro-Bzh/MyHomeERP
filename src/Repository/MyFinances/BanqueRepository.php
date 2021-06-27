@@ -19,6 +19,16 @@ class BanqueRepository extends ServiceEntityRepository
         parent::__construct($registry, Banque::class);
     }
 
+    public function findActif()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.archive is null')
+            ->orderBy('c.societe', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
     // /**
     //  * @return Banque[] Returns an array of Banque objects
     //  */
