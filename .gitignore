@@ -4,7 +4,6 @@
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
 /var/
 /vendor/
 /migrations
@@ -18,13 +17,12 @@
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
-/public/build/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 
 ###> Fichiers manuels  ###
-/public/images
+/public/images/
 ###< Fichiers manuels  ###
 
 ###> liip/imagine-bundle ###
