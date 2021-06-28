@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Form\PersonneChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
+use App\Repository\MyFinances\OperationRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -20,11 +21,14 @@ class MyHomeERPController extends AbstractController
     /**
      * @Route("/", name="app_index")
      */
-    public function app_index(): Response
+    public function app_index(OperationRepository $operationRepo): Response
     {
         if ($this->getUser()) {
+            $listeOperationEcheance = $operationRepo->findOperationsEcheancesNonRapprocheesAll();
+
             return $this->render('default/backend/index.html.twig', [
                 'controller_name' => 'MyHomeERPController',
+                'listeEcheances' => $listeOperationEcheance
             ]);
         }
         else {  

@@ -33,40 +33,12 @@ class SocieteRepository extends ServiceEntityRepository
     public function findBanque()
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.estBanque = true')
             ->andWhere('c.archive is null')
             ->orWhere('c.archive = 0')
+            ->andWhere('c.estBanque = true')
             ->orderBy('c.nom', 'ASC')
             ->getQuery()
             ->getResult()
         ;
     }
-    // /**
-    //  * @return Societe[] Returns an array of Societe objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Societe
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

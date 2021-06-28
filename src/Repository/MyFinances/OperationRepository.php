@@ -18,12 +18,24 @@ class OperationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Operation::class);
     }
-
+    
+    public function findOperationsEcheancesNonRapprocheesAll()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.est_pointe = false')
+            ->orWhere('c.est_pointe = 0')
+            ->andWhere('c.echeance_operation is not null')
+            ->orderBy('c.date', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     
     public function findOperationsNonRapprochees($compte)
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.est_pointe = false')
+            ->orWhere('c.est_pointe = 0')
             ->andWhere('c.Compte = :compte')
             ->andWhere('c.echeance_operation IS NULL')
             ->setParameter('compte', $compte)
@@ -48,9 +60,10 @@ class OperationRepository extends ServiceEntityRepository
     public function findEcheances($compte)
     {
         return $this->createQueryBuilder('c')
+            ->andWhere('c.est_pointe = false')
+            ->orWhere('c.est_pointe = 0')
             ->andWhere('c.Compte = :compte')
             ->andWhere('c.echeance_operation IS NOT NULL')
-            ->andWhere('c.est_pointe = false')
             ->setParameter('compte', $compte)
             ->orderBy('c.date', 'DESC')
             ->getQuery()
@@ -80,32 +93,4 @@ class OperationRepository extends ServiceEntityRepository
         ;
     }
 
-    // /**
-    //  * @return Operation[] Returns an array of Operation objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('o.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Operation
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
