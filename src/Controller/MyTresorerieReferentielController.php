@@ -340,7 +340,7 @@ class MyTresorerieReferentielController extends AbstractController
     }
 
     /**
-     * @Route("/tresorerie/referentiel/banque/del/{id<[0-9+]>}", name="app_myTresorerie_referentiel_banques_del", methods ="DELETE")
+     * @Route("/tresorerie/referentiel/banque/del/{id}", name="app_myTresorerie_referentiel_banques_del", methods ="DELETE")
      */
     public function mytresorerie_referentiel_banqueDelete(Banque $banque, Request $requete, EntityManagerInterface $em): Response
     {
@@ -352,6 +352,28 @@ class MyTresorerieReferentielController extends AbstractController
                 $this->addFlash("successMSG", "Enregistrement supprimé");
             } catch (\Exception $e) {
                 $this->addFlash("errorMSG", "Suppression impossible - La banque est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+
+            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/referentiel/compte/del/{id}", name="app_myTresorerie_referentiel_comptes_del", methods ="DELETE")
+     */
+    public function mytresorerie_referentiel_compteDelete(Compte $compte, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('compte_supprime_' . $compte->getId(), $requete->request->get('csrf_token'))) {
+            try {
+                $em->remove($compte);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - Le compte est référencée dans un autre module. Procédez à un archivage à la place");
             }
 
             return $this->redirectToRoute('app_myTresorerie_referentiel');

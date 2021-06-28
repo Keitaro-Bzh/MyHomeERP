@@ -1,42 +1,65 @@
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="mb-md text-right">
-                
-            </div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="mb-md text-right">
+            
         </div>
     </div>
-    {% if banques|length > 0 %}
-        <table class="table table-bordered table-striped mb-none" id="datatable-editable">
-            <thead>
+</div>
+{% if banques|length > 0 %}
+    <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Guichet</th>
+                <th>Téléphone</th>
+                <th>URL</th>
+                <th class="col-md-1 text-center">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for banque in banques %}
                 <tr>
-                    <th>Nom</th>
-                    <th>Guichet</th>
-                    <th>Téléphone</th>
-                    <th>URL</th>
-                    <th class="col-md-1 text-center">Options</th>
+                    <td>{{ banque.societe.nom }}</td>
+                    <td>{{ banque.guichet }}</td>
+                    <td>{{ banque.societe.telephone }}</td>
+                    <td><a href="{{ banque.societe.url }}" target="_blank">{{ banque.societe.url }}</a></td>
+                    <td class="actions text-center">
+                        <a href="{{ path('app_myTresorerie_referentiel_banque_edit', { 'id' : banque.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                        <a class="modal-basic" href="#modalBasicBanque{{ banque.id }}"><i class="fa fa-trash-o"></i></a>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-            {% for banque in banques %}
-                    <tr>
-                        <td>{{ banque.societe.nom }}</td>
-                        <td>{{ banque.guichet }}</td>
-                        <td>{{ banque.societe.telephone }}</td>
-                        <td><a href="{{ banque.societe.url }}" target="_blank">{{ banque.societe.url }}</a></td>
-                        <td class="actions text-center">
-                            <a href="{{ path('app_myTresorerie_referentiel_banque_edit', { 'id' : banque.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                            <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-banque-effacer-{{banque.id}}').submit();">CONFIRMER</button>
-                            <form id="js-banque-effacer-{{banque.id}}"  action="{{ path('app_myTresorerie_referentiel_banques_del', { 'id' : banque.id }) }}" method="post" style="display:none;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token('banque_supprime_' ~ banque.id) }}">
-                                <input type="hidden" name="_method" value="DELETE">
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="alert alert-success">
-            Aucune banque n'a été enregistrée pour le moment.
-        </div>
-    {% endif %}
+                {# Fenetre modèle pour valider la suppression d'une ficher banque #}
+                <div id="modalBasicBanque{{ banque.id }}" class="modal-block modal-block-primary mfp-hide">
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">Etes-vous sur de vouloir supprimer la banque -- {{ banque.societe.nom }} -- ?</h2>
+                        </header>
+                        <div class="panel-body">
+                            <p>
+                                La suppression d'une banque ne pourra se faire si des comptes et opérations sont associés.
+                                En cas de doute, annuler votre action et archiver la banque.
+                            </p>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-md-12 text-right">
+                                    <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                    <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-banque-effacer-{{banque.id}}').submit();">CONFIRMER</button>
+                                    <form id="js-banque-effacer-{{banque.id}}"  action="{{ path('app_myTresorerie_referentiel_banques_del', { 'id' : banque.id }) }}" method="post" style="display:none;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('banque_supprime_' ~ banque.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                    </form>
+                                </div>
+                            </div>
+                        </footer>
+                    </section>
+                </div>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-success">
+        Aucune banque n'a été enregistrée pour le moment.
+    </div>
+{% endif %}
+
