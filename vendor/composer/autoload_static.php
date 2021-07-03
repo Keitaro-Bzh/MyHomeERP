@@ -3146,6 +3146,7 @@ class ComposerStaticInit56b6fccbf797117dff37d46974afbda8
         'Symfony\\Bundle\\MakerBundle\\Util\\MakerFileLinkFormatter' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/MakerFileLinkFormatter.php',
         'Symfony\\Bundle\\MakerBundle\\Util\\PhpCompatUtil' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/PhpCompatUtil.php',
         'Symfony\\Bundle\\MakerBundle\\Util\\PrettyPrinter' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/PrettyPrinter.php',
+        'Symfony\\Bundle\\MakerBundle\\Util\\TemplateComponentGenerator' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/TemplateComponentGenerator.php',
         'Symfony\\Bundle\\MakerBundle\\Util\\YamlManipulationFailedException' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/YamlManipulationFailedException.php',
         'Symfony\\Bundle\\MakerBundle\\Util\\YamlSourceManipulator' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Util/YamlSourceManipulator.php',
         'Symfony\\Bundle\\MakerBundle\\Validator' => __DIR__ . '/..' . '/symfony/maker-bundle/src/Validator.php',

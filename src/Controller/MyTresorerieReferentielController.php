@@ -39,11 +39,12 @@ class MyTresorerieReferentielController extends AbstractController
     /**
      * @Route("/tresorerie/referentiel", name="app_myTresorerie_referentiel")
      */
-    public function mytresorerie_referentiel(BanqueRepository $banqueRepo, CompteRepository $compteRepo,ModePaiementRepository $modePaiement,TypeCompteRepository $typeCompteRepo, CategorieRepository $categorieRepo): Response
+    public function mytresorerie_referentiel(BanqueRepository $banqueRepo,SousCategorieRepository $sousCategorieRepo, CompteRepository $compteRepo,ModePaiementRepository $modePaiement,TypeCompteRepository $typeCompteRepo, CategorieRepository $categorieRepo): Response
     {
         $banques = $banqueRepo->findAll();
         $comptes = $compteRepo->findAll();
         $categories = $categorieRepo->findAll();
+        $sousCategories = $sousCategorieRepo->findAll();
         $modesPaiement = $modePaiement->findAll();
         $typesCompte = $typeCompteRepo->findAll();
 
@@ -52,6 +53,7 @@ class MyTresorerieReferentielController extends AbstractController
             'banques' => $banques,
             'comptes' => $comptes,
             'categories' => $categories,
+            'sousCategories' => $sousCategories,
             'modesPaiement' => $modesPaiement,
             'typesCompte' => $typesCompte,
         ]);
@@ -59,7 +61,7 @@ class MyTresorerieReferentielController extends AbstractController
 
     /**
      * @Route("/tresorerie/referentiel/banque/add", name="app_myTresorerie_referentiel_banque_add")
-     * @Route("/tresorerie/referentiel/banque/edit/{id>}", name="app_myTresorerie_referentiel_banque_edit")
+     * @Route("/tresorerie/referentiel/banque/edit/{id}", name="app_myTresorerie_referentiel_banque_edit")
      */
     public function mytresorerie_referentiel_banque_form(?int $id,BanqueRepository $banqueRepo, SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -222,6 +224,7 @@ class MyTresorerieReferentielController extends AbstractController
             ->add('categorieID', CategorieChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
+                'data' => ($sousCategorie->getCategorie()) ? $sousCategorie->getCategorie()->getId() : ''
             ])
             ->add('nom', TextType::class, [
                 'attr' => ['class' => 'form-control'],
@@ -308,6 +311,15 @@ class MyTresorerieReferentielController extends AbstractController
                     'Chéquier' => 'CHQ',
                     'Paypal' => 'PAY',
                     ],
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('ChequeNumeroDebut',TextType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])  
+            ->add('ChequeNumeroFin',TextType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])          
+            ->add('numeroCarte',TextType::class, [
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('compteID',CompteChoiceType::class, [

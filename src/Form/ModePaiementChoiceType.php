@@ -18,14 +18,20 @@ class ModePaiementChoiceType extends AbstractType
     {
         $ModePaiement = array();
         $ModePaiement["--- Sélectionnez un mode de paiement ---"] = '-1';
+        $ModePaiement['Virement'] = 'VIR';
+        $ModePaiement['Prélèvement'] = 'PRE';
         foreach($this->ModePaiementList as $modePaiement) {
             if ($modePaiement->getModePaiement() == 'CB') {
-                $libelle = "Carte bancaire (" . $modePaiement->getTitulaire()->getNom() . " " . $modePaiement->getTitulaire()->getpreNom() . ")";
+                $libelle = "Carte bancaire (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
+            }
+            if ($modePaiement->getModePaiement() == 'PAY') {
+                $libelle = "PayPal/Paylib (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
+            }
+            if ($modePaiement->getModePaiement() == 'CHQ') {
+                $libelle = "Chèque (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
             }
             $ModePaiement[$libelle] = $modePaiement->getId();
         }
-        $ModePaiement['Virement'] = 'VIR';
-        $ModePaiement['Prélèvement'] = 'PRE';
         $resolver->setDefaults([
             'choices' =>$ModePaiement,
         ]);

@@ -105,6 +105,9 @@ class Compte
      */
     private $archive;
 
+    private $soldeCours;
+    private $soldeReel;
+
     public function __construct()
     {
         $this->modePaiements = new ArrayCollection();
@@ -392,6 +395,30 @@ class Compte
     public function setArchive(?bool $archive): self
     {
         $this->archive = $archive;
+
+        return $this;
+    }
+
+    public function getSoldeCours(): ?float
+    {
+        return $this->soldeCours;
+    }
+
+    public function setSoldeCours(float $soldeCours): self
+    {
+        $this->soldeCours = $soldeCours;
+
+        return $this;
+    }
+
+    public function getSoldReel(): ?float
+    {
+        return $this->soldeReel;
+    }
+
+    public function setSoldeReel(float $soldeReel): self
+    {
+        $this->soldeReel = $soldeReel;
 
         return $this;
     }

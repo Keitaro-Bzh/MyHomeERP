@@ -39,10 +39,10 @@ class MyTresorerieController extends AbstractController
     /**
      * @Route("/tresorerie", name="app_myTresorerie_index")
      */
-    public function mytresorerie_index(CompteRepository $compteRepo, TypeCompteRepository $typeCompteRepo ): Response
+    public function mytresorerie_index(CompteRepository $compteRepo, TypeCompteRepository $typeCompteRepo): Response
     {
         $typesCompte = $typeCompteRepo->findAll();
-        $comptes = $compteRepo->findAll();
+        $comptes = $compteRepo->findActif();
 
         return $this->render('default/backend/myTresorerie/mytresorerie.html.twig', [
             'controller_name' => 'MyTresorerieController',
@@ -122,7 +122,6 @@ class MyTresorerieController extends AbstractController
                 ),
                 'attr' => ['class' => 'form-control'],
                 'data' => $operation->getModePaiement() ?  $operation->getModePaiement()->getId() : ($operation->getModePaiementTrigramme() ?  : null)
-                //'data' => $operation->getModePaiementTrigramme() ?  $operation->getModePaiementTrigramme : null,
             ])
             ->add('typeTiers', ChoiceType::class, array(
                 'multiple' => false,

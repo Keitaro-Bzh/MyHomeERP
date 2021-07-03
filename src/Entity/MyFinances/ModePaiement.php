@@ -32,14 +32,9 @@ class ModePaiement
 
     /**
      * @ORM\ManyToOne(targetEntity=Personne::class, inversedBy="modePaiements")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $titulaire;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Personne::class)
-     */
-    private $coTitulaire;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -104,18 +99,6 @@ class ModePaiement
     public function setTitulaire(?Personne $titulaire): self
     {
         $this->titulaire = $titulaire;
-
-        return $this;
-    }
-
-    public function getCoTitulaire(): ?Personne
-    {
-        return $this->coTitulaire;
-    }
-
-    public function setCoTitulaire(?Personne $coTitulaire): self
-    {
-        $this->coTitulaire = $coTitulaire;
 
         return $this;
     }

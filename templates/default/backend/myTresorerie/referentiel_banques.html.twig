@@ -1,28 +1,21 @@
-<div class="row">
-    <div class="col-sm-12">
-        <div class="mb-md text-right">
-            
-        </div>
-    </div>
+<div class="col-md-12 text-right">
+    <a href="{{ path('app_myTresorerie_referentiel_banque_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> BANQUE</button></a>
+    {% if banques|length > 0 %}
+        <a href="{{ path('app_myTresorerie_referentiel_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> COMPTE</button></a>
+    {% endif %}
 </div>
 {% if banques|length > 0 %}
     <table class="table table-bordered table-striped mb-none" id="datatable-editable">
         <thead>
             <tr>
-                <th>Nom</th>
-                <th>Guichet</th>
-                <th>Téléphone</th>
-                <th>URL</th>
+                <th colspan=2></th>
                 <th class="col-md-1 text-center">Options</th>
             </tr>
         </thead>
         <tbody>
         {% for banque in banques %}
                 <tr>
-                    <td>{{ banque.societe.nom }}</td>
-                    <td>{{ banque.guichet }}</td>
-                    <td>{{ banque.societe.telephone }}</td>
-                    <td><a href="{{ banque.societe.url }}" target="_blank">{{ banque.societe.url }}</a></td>
+                    <td colspan=2><strong>{{ banque.societe.nom }} ({{ banque.guichet }})</strong> {% if banque.societe.url %}<a href="{{ banque.societe.url }}" target="_blank"><i class="fa fa-star" aria-hidden="true"></i></a>{% endif %}
                     <td class="actions text-center">
                         <a href="{{ path('app_myTresorerie_referentiel_banque_edit', { 'id' : banque.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
                         <a class="modal-basic" href="#modalBasicBanque{{ banque.id }}"><i class="fa fa-trash-o"></i></a>
@@ -54,6 +47,51 @@
                         </footer>
                     </section>
                 </div>
+
+                {% if comptes|length > 0 %}
+                    {% for compte in comptes %}
+                        {% if compte.banque.societe.nom == banque.societe.nom %}
+                            <tr>
+                                <td><i class="fa fa-caret-right"></i> {{ compte.libelle }}</td>
+                                <td>{{ compte.titulaire.nom }} {{ compte.titulaire.prenom }}{% if compte.cotitulaire is not null %} / {{ compte.cotitulaire.nom }} {{ compte.cotitulaire.prenom }}{% endif %} </td>
+                                <td class="actions text-center">
+                                    <a href="{{ path('app_myTresorerie_referentiel_compte_edit', { 'id' : compte.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                    <a class="modal-basic" href="#modalBasicCompte{{ compte.id }}"><i class="fa fa-trash-o"></i></a>
+                                </td>
+                            </tr>
+                            {# Fenetre modèle pour valider la suppression d'une ficher compte #}
+                            <div id="modalBasicCompte{{ compte.id }}" class="modal-block modal-block-primary mfp-hide">
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Etes-vous sur de vouloir supprimer le compte -- {{ compte.libelle }} -- ?</h2>
+                                    </header>
+                                    <div class="panel-body">
+                                        <p>
+                                            La suppression d'un compte ne pourra se faire si des opérations sont associés.
+                                            En cas de doute, annuler votre action et archiver le compte.
+                                        </p>
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-md-12 text-right">
+                                                <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-compte-effacer-{{compte.id}}').submit();">CONFIRMER</button>
+                                                <form id="js-compte-effacer-{{compte.id}}"  action="{{ path('app_myTresorerie_referentiel_comptes_del', { 'id' : compte.id }) }}" method="post" style="display:none;">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token('compte_supprime_' ~ compte.id) }}">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-success">
+                        Aucun compte n'a été enregistrée pour le moment.
+                    </div>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>

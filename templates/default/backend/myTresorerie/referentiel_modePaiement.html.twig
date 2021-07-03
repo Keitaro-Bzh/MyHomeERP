@@ -1,22 +1,32 @@
-<div class="row">
-    <div class="col-sm-12">
-        <div class="mb-md text-right">
-            
-        </div>
-    </div>
+<div class="col-md-12 text-right">
+    <a href="{{ path('app_myTresorerie_referentiel_mode_paiement_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> MODE PAIMENT</button></a>
 </div>
+
 {% if modesPaiement|length > 0 %}
     <table class="table table-bordered table-striped mb-none" id="datatable-editable">
         <thead>
             <tr>
-                <th>Modes de paiement</th>
+                <th class='col-sm-2'>Modes de paiement</th>
+                <th>Titulaire</th>
+                <th>Compte</th>
                 <th class="col-md-1 text-center">Options</th>
             </tr>
         </thead>
         <tbody>
         {% for modePaiement in modesPaiement %}
                 <tr>
-                    <td>{{ modePaiement.modePaiement }}</td>
+                    <td>
+                        {% if modePaiement.modePaiement == 'CB' %}Carte Bancaire{% endif %}
+                        {% if modePaiement.modePaiement == 'PAY' %}Paypal/Paylib{% endif %}
+                        {% if modePaiement.modePaiement == 'CHQ' %}Chéquier{% endif %}
+                    </td>
+                    <td>{% if modePaiement.titulaire %}
+                            {{ modePaiement.titulaire.nom }} {{ modePaiement.titulaire.prenom }}
+                        {% else  %}
+                            {{ modePaiement.compte.titulaire.nom }} {{ modePaiement.compte.titulaire.prenom }}{% if modePaiement.compte.cotitulaire is not null %} / {{ modePaiement.compte.cotitulaire.nom }} {{ modePaiement.compte.cotitulaire.prenom }}{% endif %} 
+                        {% endif %}    
+                    </td>
+                    <td>[{{ modePaiement.compte.banque.societe.nom|upper }}] {{ modePaiement.compte.libelle }}</td>
                     <td class="actions text-center">
                         <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : modePaiement.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
                         <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>

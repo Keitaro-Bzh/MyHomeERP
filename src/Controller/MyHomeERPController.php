@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Form\PersonneChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
 use App\Repository\MyFinances\OperationRepository;
+use App\Repository\MyFinances\CategorieRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -21,14 +22,16 @@ class MyHomeERPController extends AbstractController
     /**
      * @Route("/", name="app_index")
      */
-    public function app_index(OperationRepository $operationRepo): Response
+    public function app_index(OperationRepository $operationRepo, CategorieRepository $categorieRepo): Response
     {
         if ($this->getUser()) {
             $listeOperationEcheance = $operationRepo->findOperationsEcheancesNonRapprocheesAll();
+            $categories = $categorieRepo->findAll();
 
             return $this->render('default/backend/index.html.twig', [
                 'controller_name' => 'MyHomeERPController',
-                'listeEcheances' => $listeOperationEcheance
+                'listeEcheances' => $listeOperationEcheance,
+                'categories' => $categories
             ]);
         }
         else {  

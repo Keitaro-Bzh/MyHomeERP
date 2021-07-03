@@ -2547,6 +2547,7 @@ return array(
     'Symfony\\Bundle\\MakerBundle\\Util\\MakerFileLinkFormatter' => $vendorDir . '/symfony/maker-bundle/src/Util/MakerFileLinkFormatter.php',
     'Symfony\\Bundle\\MakerBundle\\Util\\PhpCompatUtil' => $vendorDir . '/symfony/maker-bundle/src/Util/PhpCompatUtil.php',
     'Symfony\\Bundle\\MakerBundle\\Util\\PrettyPrinter' => $vendorDir . '/symfony/maker-bundle/src/Util/PrettyPrinter.php',
+    'Symfony\\Bundle\\MakerBundle\\Util\\TemplateComponentGenerator' => $vendorDir . '/symfony/maker-bundle/src/Util/TemplateComponentGenerator.php',
     'Symfony\\Bundle\\MakerBundle\\Util\\YamlManipulationFailedException' => $vendorDir . '/symfony/maker-bundle/src/Util/YamlManipulationFailedException.php',
     'Symfony\\Bundle\\MakerBundle\\Util\\YamlSourceManipulator' => $vendorDir . '/symfony/maker-bundle/src/Util/YamlSourceManipulator.php',
     'Symfony\\Bundle\\MakerBundle\\Validator' => $vendorDir . '/symfony/maker-bundle/src/Validator.php',

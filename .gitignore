@@ -1,6 +1,5 @@
 
 ###> symfony/framework-bundle ###
-/.htaccess
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -24,6 +23,7 @@ yarn-error.log
 
 ###> Fichiers manuels  ###
 /public/images/
+/public/.htaccess
 ###< Fichiers manuels  ###
 
 ###> liip/imagine-bundle ###

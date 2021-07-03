@@ -7,14 +7,6 @@
 {% block contenu_site %}
     <section class="panel">
         <header class="panel-heading">
-            <div class="panel-actions">
-                <a href="{{ path('app_myTresorerie_referentiel_banque_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> BANQUE</button></a>
-                <a href="{{ path('app_myTresorerie_referentiel_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> COMPTE</button></a>
-                <a href="{{ path('app_myTresorerie_referentiel_categorie_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> CATEGORIE</button></a>
-                <a href="{{ path('app_myTresorerie_referentiel_type_compte_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> TYPE COMPTE</button></a>
-                <a href="{{ path('app_myTresorerie_referentiel_mode_paiement_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> MODE PAIMENT</button></a>
-            </div>
-
             <h2 class="panel-title">PARAMETRAGE DES REFERENTIELS</h2>
         </header>
         <div class="panel-body">
@@ -27,11 +19,8 @@
             <div class="tabs tabs-vertical tabs-left">
                 <ul class="nav nav-tabs">
                     <li class="active">
-                        <a href="#banques" data-toggle="tab"><i class="fa fa-bank"></i> Banques</a>
-                    </li>
-                    <li>
-                        <a href="#comptes" data-toggle="tab"><i class="fa fa-suitcase"></i> Comptes</a>
-                    </li>    
+                        <a href="#banques" data-toggle="tab"><i class="fa fa-bank"></i> Banques/Comptes</a>
+                    </li>  
                     <li>
                         <a href="#categories" data-toggle="tab"><i class="fa fa-folder-open"></i> Categories</a>
                     </li>
@@ -45,9 +34,6 @@
                 <div class="tab-content">
                     <div id="banques" class="tab-pane active">
                         <p>{% include 'default/backend/myTresorerie/referentiel_banques.html.twig' %}</p>
-                    </div>
-                    <div id="comptes" class="tab-pane">
-                        <p>{% include 'default/backend/myTresorerie/referentiel_comptes.html.twig' %}</p>
                     </div>
                     <div id="categories" class="tab-pane">
                         <p>{% include 'default/backend/myTresorerie/referentiel_categories.html.twig' %}</p>

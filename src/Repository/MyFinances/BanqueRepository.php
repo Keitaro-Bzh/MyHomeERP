@@ -23,6 +23,7 @@ class BanqueRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.archive is null')
+            ->orWhere('c.archive = 0')
             ->orderBy('c.societe', 'ASC')
             ->getQuery()
             ->getResult()
