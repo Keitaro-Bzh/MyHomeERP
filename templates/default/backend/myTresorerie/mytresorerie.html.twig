@@ -36,23 +36,43 @@
                                                 <section class="panel panel-featured panel-featured-primary">
                                                     <header class="panel-heading">
                                                         <h5><a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte.id }) }}">[{{ compte.banque.societe.nom|upper }}] {{ compte.libelle }}</a></h5>
-                                                        <p class="panel-subtitle">{{ compte.titulaire.nom }} {{ compte.titulaire.prenom }} {% if compte.Cotitulaire %} - {{ compte.Cotitulaire.nom }} {{ compte.Cotitulaire.prenom }}{% endif %}</p>
+                                                        <p class="panel-subtitle">{{ compte.titulaire.prenom }} {{ compte.titulaire.nom }} {% if compte.Cotitulaire %} - {{ compte.Cotitulaire.prenom }} {{ compte.Cotitulaire.nom }}{% endif %}</p>
                                                     </header>
                                                     <div class="panel-body">
                                                         <div class="table-responsive">
                                                             <table class="table table-hover mb-none">
                                                                 <thead>
                                                                     <th></th>
-                                                                    <th>SOLDE</th>
+                                                                    <th class="text-right">SOLDE</th>
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Pointé</td>
-                                                                        <td>1200 €</td>
+                                                                        <td class="text-right">
+                                                                            {% if  compte.SoldeCours > 0 %}
+                                                                                <div class="text-success">{{ compte.SoldeCours }} €</div>
+                                                                            {% endif %}
+                                                                            {% if  compte.SoldeCours < 0 %}
+                                                                                <div class="text-danger">{{ compte.SoldeCours }} €</div>
+                                                                            {% endif %}
+                                                                            {% if  compte.SoldeCours == 0 %}
+                                                                                <div>0.00 €</div>
+                                                                            {% endif %}
+                                                                        </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Réel</td>
-                                                                        <td>980 €</td>
+                                                                        <td class="text-right">
+                                                                            {% if  compte.SoldeReel > 0 %}
+                                                                                <div class="text-success">{{ compte.SoldeReel }} €</div>
+                                                                            {% endif %}
+                                                                            {% if  compte.SoldeReel < 0 %}
+                                                                                <div class="text-danger">{{ compte.SoldeReel }} €</div>
+                                                                            {% endif %}
+                                                                            {% if  compte.SoldeReel == 0 %}
+                                                                                <div>0.00 €</div>
+                                                                            {% endif %}
+                                                                        </td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>

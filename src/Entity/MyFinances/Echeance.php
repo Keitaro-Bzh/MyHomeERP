@@ -314,17 +314,6 @@ class Echeance
         return $this;
     }
 
-    public function getModePaiementTrigramme(): ?string
-    {
-        return $this->mode_paiement_trigramme;
-    }
-
-    public function setModePaiementTrigramme(string $mode_paiement_trigramme): self
-    {
-        $this->mode_paiement_trigramme = $mode_paiement_trigramme;
-
-        return $this;
-    }
 
     public function getModePaiement(): ?ModePaiement
     {
@@ -337,6 +326,19 @@ class Echeance
 
         return $this;
     }
+
+    public function getModePaiementTrigramme(): ?string
+    {
+        return $this->mode_paiement_trigramme;
+    }
+
+    public function setModePaiementTrigramme(string $mode_paiement_trigramme): self
+    {
+        $this->mode_paiement_trigramme = $mode_paiement_trigramme;
+
+        return $this;
+    }
+
 
     public function getTypeOperation(): ?string
     {

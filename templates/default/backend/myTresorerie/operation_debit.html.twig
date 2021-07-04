@@ -81,11 +81,17 @@
                         <div class="col-md-5">
                             {{ form_widget(form.societeID) }}
                         </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('app_societes_ajout') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
+                        </div>
                     </div>
                     <div class="form-group" id="personneID">
                         <label class="col-md-2 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.personneID) }}
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('app_personnes_ajout') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
                         </div>
                     </div>
                     <div class="form-group">

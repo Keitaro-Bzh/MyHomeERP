@@ -58,13 +58,32 @@
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_pointage_' ~ operation.id) }}">
                                 <input type="hidden" name="_method" value="UPDATE">
                             </form>
-                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-operation-effacer-{{operation.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                            <form id="js-operation-effacer-{{operation.id}}"  action="{{ path('app_operation_del', { 'id' : operation.id }) }}" method="post" style="display:none;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_supprime_' ~ operation.id) }}">
-                                <input type="hidden" name="_method" value="DELETE">
-                            </form>
+
+                            <a class="modal-basic" href="#modalBasicOperation{{ operation.id }}"><i class="fa fa-trash-o"></i></a>
                         </td>
                     </tr>
+
+
+                    {# Fenetre modèle pour valider la suppression d'une ficher operation #}
+                    <div id="modalBasicOperation{{ operation.id }}" class="modal-block modal-block-primary mfp-hide">
+                        <section class="panel">
+                            <header class="panel-heading">
+                                <h2 class="panel-title">Etes-vous sur de vouloir supprimer cette operation?</h2>
+                            </header>
+                            <footer class="panel-footer">
+                                <div class="row">
+                                    <div class="col-md-12 text-right">
+                                        <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                        <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-operation-effacer-{{operation.id}}').submit();">CONFIRMER</button>
+                                        <form id="js-operation-effacer-{{operation.id}}"  action="{{ path('app_operation_del', { 'id' : operation.id }) }}" method="post" style="display:none;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_supprime_' ~ operation.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                        </form>
+                                    </div>
+                                </div>
+                            </footer>
+                        </section>
+                    </div>
                 {% endfor %}
             </tbody>
         </table>

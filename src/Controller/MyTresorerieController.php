@@ -57,7 +57,8 @@ class MyTresorerieController extends AbstractController
     public function mytresorerie_compte(int $id,OperationRepository $operationRepo, CompteRepository $compteRepo): Response
     {
         $compte = $compteRepo->find($id);
-        //dd($operationRepo->findEcheances($compte));
+        $compte = $compteRepo->calculSoldes($compte);
+        
         return $this->render('default/backend/myTresorerie/compte_releve.html.twig', [
             'controller_name' => 'MyTresorerieController',
             'compte' => $compte,

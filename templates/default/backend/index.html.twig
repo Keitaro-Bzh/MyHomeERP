@@ -142,20 +142,64 @@
 
 				{% block contenu_site %}
 				
+				<div class="col-md-12">
+					<section class="panel">
+						<header class="panel-heading">
+							<h2 class="panel-title">Mouvements sur les 30 derniers jours par catégorie</h2>                           
+						</header>
+						<div class="panel-body">
+							<div class="chart chart-md" id="morrisBar"></div>
+							{% if categories|length > 0 %}
+								{% set i = 1 %}
+								<script type="text/javascript">
+									var morrisBarData = [
+										{% for categorie in categories %}
+											{y: "{{ categorie.categorie }}",
+											a: {{ categorie.credit }},
+											b: {{ categorie.debit }}}{% if i < categories|length %},{% endif %}
+											{% set i = i + 1 %}
+										{% endfor %}
+									];
+								</script>
+							{% endif %}
+						</div>
+					</section>
+				</div>
 				<div class="col-md-4">
 					<section class="panel">
 						<header class="panel-heading">
 							<h2 class="panel-title">Comptes</h2>
 						</header>
 						<div class="panel-body">
-							
+							{% if banques|length > 0 %}
+								{% for banque in banques %}
+									<p class="col-md-12">
+										<div class="ml-1"><strong>{{ banque.societe.nom|upper }}</strong></div>
+										{% if comptes|length > 0 %}
+											{% for compte in comptes %}
+												{% if banque.id == compte.banque.id %}
+												<div class="p-1">
+														<div class="col-md-12">
+															{{ compte.libelle }} (<em>{{ compte.titulaire.prenom}} {{ compte.titulaire.nom|slice(0,1) }}.{%if compte.cotitulaire %} / {{ compte.cotitulaire.prenom}} {{ compte.cotitulaire.nom|slice(0,1)}}. {% endif %})</em>
+														</div>
+														<div class="col-md-12 text-right">
+															<span class="text-{% if compte.SoldeCours < 0 %}danger{% else %}success{% endif %}">{{ compte.SoldeCours }} €</span> (<span class="text-{% if compte.SoldeReel < 0 %}danger{% else %}success{% endif %}">{{ compte.SoldeReel }} €</span>)
+														</div>
+												</div>
+												<br />
+												{% endif %}
+											{% endfor %}
+										{% endif %}
+									</p>
+								{% endfor %}
+							{% endif %}
 						</div>
 					</section>
 				</div>
 				<div class="col-md-8">
 					<section class="panel">
 						<header class="panel-heading">
-							<h2 class="panel-title">Echéances non rapprochées</h2>                           
+							<h2 class="panel-title">Mouvements non rapprochés</h2>                           
 						</header>
 						<div class="panel-body">
 							<div class="table-responsive">
@@ -164,8 +208,8 @@
 										<thead>
 											<tr>
 												<th class="text-center col-md-1">Date</th>
+												<th class="text-center col-md-4">Compte</th>
 												<th class="text-center col-md-4">Tiers</th>
-												<th class="text-center col-md-4">Description</th>
 												<th class="text-center col-md-2">Montant</th>
 												<th class="text-center col-md-1">Options</th>
 											</tr>
@@ -175,6 +219,10 @@
 												{% if operation.estPointe == false %}
 													<tr>
 														<td class="text-center">{{ operation.date|date('d/m/y') }}</td>
+														<td>
+															[{{ operation.compte.banque.societe.nom|upper }}] {{ operation.compte.libelle }}<br />
+															<em>{{ operation.compte.titulaire.prenom }} {{ operation.compte.titulaire.nom|slice(0,1) }}.</em>
+														</td>
 														<td>
 															{% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i> Retrait espèces {% endif %}
 															{% if operation.typeOperation == "VII" %}
@@ -193,10 +241,6 @@
 																{% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
 																{% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
 															{% endif %}
-														</td>
-														<td class="text-center">
-															{% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
-															{% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}{{ operation.description }}{% endif %}
 														</td>
 														<td class="text-right {% if operation.debit > 0 %}text-danger{% endif %}{% if operation.credit > 0 %}text-success{% endif %}">
 															{% if operation.debit > 0 %}- {{ operation.debit }} €{% endif %}
@@ -232,29 +276,6 @@
 									</div>
 								{% endif %}
 							</div>
-						</div>
-					</section>
-				</div>
-				<div class="col-md-12">
-					<section class="panel">
-						<header class="panel-heading">
-							<h2 class="panel-title">Dépenses par catégorie (30 derniers jours)</h2>                           
-						</header>
-						<div class="panel-body">
-							<div class="chart chart-md" id="morrisBar"></div>
-							{% if categories|length > 0 %}
-								{% set i = 1 %}
-								<script type="text/javascript">
-									var morrisBarData = [
-										{% for categorie in categories %}
-											{y: "{{ categorie.nom }}",
-											a: 28,
-											b: 30}{% if i < categories|length %},{% endif %}
-											{% set i = i + 1 %}
-										{% endfor %}
-									];
-								</script>
-							{% endif %}
 						</div>
 					</section>
 				</div>

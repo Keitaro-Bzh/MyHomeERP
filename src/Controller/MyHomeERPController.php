@@ -10,8 +10,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Form\PersonneChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
+use App\Repository\MyFinances\BanqueRepository;
 use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\CategorieRepository;
+use App\Repository\MyFinances\CompteRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -22,16 +24,20 @@ class MyHomeERPController extends AbstractController
     /**
      * @Route("/", name="app_index")
      */
-    public function app_index(OperationRepository $operationRepo, CategorieRepository $categorieRepo): Response
+    public function app_index(OperationRepository $operationRepo, CategorieRepository $categorieRepo,BanqueRepository $banqueRepo, CompteRepository $compteRepo): Response
     {
         if ($this->getUser()) {
-            $listeOperationEcheance = $operationRepo->findOperationsEcheancesNonRapprocheesAll();
-            $categories = $categorieRepo->findAll();
+            $listeOperationEcheance = $operationRepo->findOperationsNonRapprocheesAll();
+            $statistiquesCategorie = $categorieRepo->sqlStatistiqueSoldeParCategorie();
+            $banques = $banqueRepo->findActif();
+            $comptes = $compteRepo->findActif();
 
             return $this->render('default/backend/index.html.twig', [
                 'controller_name' => 'MyHomeERPController',
                 'listeEcheances' => $listeOperationEcheance,
-                'categories' => $categories
+                'categories' => $statistiquesCategorie,
+                'banques' => $banques,
+                'comptes' => $comptes
             ]);
         }
         else {  

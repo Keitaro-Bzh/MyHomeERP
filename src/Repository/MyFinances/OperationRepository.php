@@ -30,6 +30,18 @@ class OperationRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findOperationsNonRapprocheesAll()
+    {
+
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.est_pointe = false')
+            ->orWhere('c.est_pointe = 0')
+            ->orderBy('c.date', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     
     public function findOperationsNonRapprochees($compte)
     {

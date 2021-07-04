@@ -411,7 +411,7 @@ class Compte
         return $this;
     }
 
-    public function getSoldReel(): ?float
+    public function getSoldeReel(): ?float
     {
         return $this->soldeReel;
     }

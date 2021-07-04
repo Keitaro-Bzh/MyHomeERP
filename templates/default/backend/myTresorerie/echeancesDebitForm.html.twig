@@ -49,14 +49,14 @@
                             {{ form_widget(form.type_tiers) }}
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-3 control-label">LIBELLE TIERS</label>
+                    <div class="form-group" id="tiers">
+                        <label class="col-md-3 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.tiers_libelle) }}
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-3 control-label">PERSONNE</label>
+                    <div class="form-group" id="personneID">
+                        <label class="col-md-3 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.personneID) }}
                         </div>
@@ -64,8 +64,8 @@
                             <a href="{{ path('app_personnes_ajout') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-3 control-label">SOCIETE</label>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-3 control-label">TIERS</label>
                         <div class="col-md-5">
                             {{ form_widget(form.societeID) }}
                         </div>
@@ -111,5 +111,31 @@
             {{ form_end(form)}}
         </div>
     </section>
-    {% block footer_Script %}{% endblock %}
+    {% block footer_Script %}
+    <script>
+        afficheChampTiers(document.getElementById("form_type_tiers").value);
+        document.getElementById("form_type_tiers").addEventListener("change", () => {
+            afficheChampTiers(document.getElementById("form_type_tiers").value);
+        })
+        document.getElementById("cheque").style.display = "none";
+
+        function afficheChampTiers (choix) {
+            if (choix == "L") {
+                document.getElementById("tiers").style.display = "block";
+                document.getElementById("personneID").style.display = "none";
+                document.getElementById("societeID").style.display = "none";
+            }
+            if (choix == "P") {
+                document.getElementById("personneID").style.display = "block";
+                document.getElementById("tiers").style.display = "none";
+                document.getElementById("societeID").style.display = "none";
+            }
+            if (choix == "S") {
+                document.getElementById("personneID").style.display = "none";
+                document.getElementById("tiers").style.display = "none";
+                document.getElementById("societeID").style.display = "block";
+            }
+        }
+    </script>
+    {% endblock %}
 {% endblock %}

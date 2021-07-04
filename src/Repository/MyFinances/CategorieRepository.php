@@ -24,32 +24,38 @@ class CategorieRepository extends ServiceEntityRepository
         return $this->findBy(array(), array('nom' => 'ASC'));
     }
 
-    // /**
-    //  * @return Categorie[] Returns an array of Categorie objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    public function sqlStatistiqueSoldeParCategorie() {
+        /* L'objectif e cette statistique est de récupérer
+            la somme des crédits/débits sur les 30 derniers jours
+        */
+        $conn = $this->getEntityManager()->getConnection();
 
-    /*
-    public function findOneBySomeField($value): ?Categorie
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $sql = "
+            select coalesce(round(sum(debit),2),'0.00') as debit,
+                coalesce(round(sum(credit),2),'0.00') as credit,
+                myfinances_categories.nom as categorie 
+            from myfinances_operations, myfinances_sousCategories, myfinances_categories
+            where myfinances_operations.categorie_id is not null 
+            and virement_id is null
+            and type_operation != 'RET'
+            and myfinances_operations.categorie_id = myfinances_sousCategories.id
+            and myfinances_sousCategories.categorie_id = myfinances_categories.id 
+            and date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+            and date <= now()
+            group by myfinances_categories.nom
+            union all
+            select coalesce(sum(debit),'0.00') as debit,
+                '0.00' as credit,
+                'RETRAIT DAB' as categorie 
+            from myfinances_operations 
+            where type_operation = 'RET'
+            and date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+            and date <= now()
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return ($stmt->fetchAllAssociative());
     }
-    */
 }

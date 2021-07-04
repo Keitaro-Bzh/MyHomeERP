@@ -18,17 +18,17 @@ class ModePaiementChoiceType extends AbstractType
     {
         $ModePaiement = array();
         $ModePaiement["--- Sélectionnez un mode de paiement ---"] = '-1';
-        $ModePaiement['Virement'] = 'VIR';
-        $ModePaiement['Prélèvement'] = 'PRE';
+        $ModePaiement['[PRE] Prélèvement'] = 'PRE';
+        $ModePaiement['[VIR] Virement'] = 'VIR';
         foreach($this->ModePaiementList as $modePaiement) {
             if ($modePaiement->getModePaiement() == 'CB') {
-                $libelle = "Carte bancaire (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
+                $libelle = "[CB] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . "." . ")";
             }
             if ($modePaiement->getModePaiement() == 'PAY') {
-                $libelle = "PayPal/Paylib (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
+                $libelle = "[PAY] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ".)";
             }
             if ($modePaiement->getModePaiement() == 'CHQ') {
-                $libelle = "Chèque (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ")";
+                $libelle = "[CHQ] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." . ($modePaiement->getCompte()->getTitulaire() ? " / " . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." : "") . ")";
             }
             $ModePaiement[$libelle] = $modePaiement->getId();
         }
