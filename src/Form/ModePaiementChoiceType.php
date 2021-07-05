@@ -22,13 +22,13 @@ class ModePaiementChoiceType extends AbstractType
         $ModePaiement['[VIR] Virement'] = 'VIR';
         foreach($this->ModePaiementList as $modePaiement) {
             if ($modePaiement->getModePaiement() == 'CB') {
-                $libelle = "[CB] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . "." . ")";
+                $libelle = "[CB] [" . $modePaiement->getCompte()->getBanque()->getSociete()->getNom() . "] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . "." . ")";
             }
             if ($modePaiement->getModePaiement() == 'PAY') {
-                $libelle = "[PAY] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . ".)";
+                $libelle = "[PAY] [" . $modePaiement->getCompte()->getBanque()->getSociete()->getNom() . "] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getTitulaire()->getPrenom() . " " . substr($modePaiement->getTitulaire()->getNom(),0,1) . "." . ")";
             }
             if ($modePaiement->getModePaiement() == 'CHQ') {
-                $libelle = "[CHQ] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." . ($modePaiement->getCompte()->getTitulaire() ? " / " . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." : "") . ")";
+                $libelle = "[CHQ] [" . $modePaiement->getCompte()->getBanque()->getSociete()->getNom() . "] " . $modePaiement->getCompte()->getLibelle() . " (" . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." . ($modePaiement->getCompte()->getTitulaire() ? " / " . $modePaiement->getCompte()->getTitulaire()->getPrenom() . " " . substr($modePaiement->getCompte()->getTitulaire()->getNom(),0,1) . "." : "") . ")";
             }
             $ModePaiement[$libelle] = $modePaiement->getId();
         }

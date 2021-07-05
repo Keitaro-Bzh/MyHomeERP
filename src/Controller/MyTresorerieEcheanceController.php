@@ -8,6 +8,7 @@ use App\Entity\MyFinances\Operation;
 use App\Form\CompteChoiceType;
 use App\Form\ModePaiementChoiceType;
 use App\Form\PersonneChoiceType;
+use App\Form\SocieteChoiceType;
 use App\Form\SocieteBanqueChoiceType;
 use App\Form\SousCategorieChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
@@ -66,6 +67,19 @@ class MyTresorerieEcheanceController extends AbstractController
                 ],
                 'data' => $echeance->getDateEcheanceOne() ? $echeance->getDateEcheanceOne() : new DateTime()
             ])
+            ->add('dateFin',DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $echeance->getDateFin() ? $echeance->getDateFin() : null
+            ])
             ->add('type_operation', HiddenType::class, [
                 'data' => 'DEB',
             ])
@@ -84,7 +98,7 @@ class MyTresorerieEcheanceController extends AbstractController
                 'attr' => ['class' => 'form-control'],
                 'data' => $echeance->getTiersPersonne() ? $echeance->getTiersPersonne()->getId() : -1
             ])
-            ->add('societeID', SocieteBanqueChoiceType::class, [
+            ->add('societeID', SocieteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'data' => $echeance->getTiersSociete() ? $echeance->getTiersSociete()->getId() : -1
@@ -107,7 +121,8 @@ class MyTresorerieEcheanceController extends AbstractController
                 'multiple' => false,
                 'attr' => ['class' => 'form-control'],
                 'choices' => array(
-                    '--- Sélectionnez la fréquence ' => '-1',
+                    '--- Sélectionnez la fréquence ---' => '-1',
+                    'Paiement 1x' => '1',
                     'Paiement 3x' => '3',
                     'Paiement 4x' => '4',
                     'Paiement 10x' => '10',
@@ -134,6 +149,10 @@ class MyTresorerieEcheanceController extends AbstractController
                 ),
                 'data' => $echeance->getTypeTiers() ? $echeance->getTypeTiers() : 'L'
             ))
+            ->add('recalcul_operation_anterieur', CheckboxType::class, [
+                'required' => false,
+                'data' => $echeance->getRecalculOperationAnterieur() ? $echeance->getRecalculOperationAnterieur() : true,
+            ])
             ->getform()
         ;
 
@@ -174,22 +193,54 @@ class MyTresorerieEcheanceController extends AbstractController
 
                 $em->persist($echeance);
                 $em->flush();
+
+                $nbEcheances = $echeance->getNombreEcheances();
                 
                 // Dans le cas ou l'on a plusieurs paiements, on va créer une entrée par paiement
-                if ($echeance->getNombreEcheances() > 0) {
-                    $montantEcheance = round($echeance->getMontantTotal() / $echeance->getNombreEcheances(),2,PHP_ROUND_HALF_UP);
+                if ($nbEcheances > 0) {
+                    $montantEcheance = round($echeance->getMontantTotal() / $nbEcheances,2,PHP_ROUND_HALF_UP);
                 }
                 else {
-                    $montantEcheance = 0;
+                    $montantEcheance = $echeance->getMontantTotal();
+                    $dateFin = $echeance->getDateFin() ? $echeance->getDateFin() : new DateTime(date("Y-m-t"));
+                    // On va vérifier si il faut recalculer les échéances passées
+                    if (isset($requete->request->get('form')['recalcul_operation_anterieur']) && $requete->request->get('form')['recalcul_operation_anterieur'] == "1") {
+                        $interval = $echeance->getDateEcheanceOne()->diff($dateFin);
+                        $nbMois= $interval->format('%m');
+                        $nbAnnee = $interval->format('%y');
+                        if ($dateFin < $echeance->getDateEcheanceOne()) {
+                            $nbEcheances = 0;
+                        }
+                        else {
+                            // On ajoute 1 pour avoir le mois en cours
+                            $nbEcheances = 12 * $nbAnnee + $nbMois +1;
+                        }
+                    }
                 }
+
                 $dateEcheance = $echeance->getDateEcheanceOne();
-                for ($i =0; $i <= $echeance->getNombreEcheances(); $i++ ) {
+                for ($i =1; $i <= $nbEcheances; $i++ ) {
                     $echeanceOperation = new EcheanceOperation;
                     $echeanceOperation->setMontantEcheance($montantEcheance);
-                    $echeanceOperation->setDateEcheance($dateEcheance);
+
+                    // On va gérer une particularité sur la date dans le cas ou on ne demande pas le recalcul pour une echéance permanente
+                    if ($echeance->getNombreEcheances() == 0 && (!isset($requete->request->get('form')['recalcul_operation_anterieur'])) && $dateEcheance <= new DateTime(date("Y-m-t"))) {
+                        $dateJour = new DateTime();
+                        if ($dateEcheance->format('d') >= 28) {
+                            $dateMoisCours = $dateEcheance->format('Y') . '-' . $dateJour->format('m') . '-28';
+                        }
+                        else {
+                            $dateMoisCours = $dateEcheance->format('Y') . '-' . $dateJour->format('m') . '-' .$dateEcheance->format('d');
+                        }
+                        dd(new dateTime($dateMoisCours));
+                        $dateEcheance = new dateTime($dateMoisCours);
+                    }
+                    else {
+                        $echeanceOperation->setDateEcheance($dateEcheance);
+                    }
                     
-                    if ($i == $echeance->getNombreEcheances()) {
-                        $echeanceOperation->setMontantEcheance($echeance->getMontantTotal() - ($montantEcheance * $i));
+                    if ($i == ($nbEcheances) && $echeance->getNombreEcheances() > 1) {
+                        $echeanceOperation->setMontantEcheance($echeance->getMontantTotal() - (($montantEcheance) * ($i - 1)));
                     }
                     $echeanceOperation->setEcheance($echeance);
                     
@@ -198,7 +249,8 @@ class MyTresorerieEcheanceController extends AbstractController
 
                     // On va créer les opérations antérieurs à la fin du mois
                     $date = New DateTime('now');
-                    if ($echeanceOperation->getDateEcheance() < $date->modify('last day of this month')) {
+                    $verifDateEcheance = isset($dateMoisCours) ? $dateMoisCours : $echeanceOperation->getDateEcheance();
+                    if ($verifDateEcheance < $date->modify('last day of this month')) {
                         $operation = new Operation;
                         $operation->setCompte($echeance->getCompte());
                         $operation->setDescription($echeance->getDescription());
@@ -211,7 +263,7 @@ class MyTresorerieEcheanceController extends AbstractController
                         $operation->setEcheanceOperation($echeanceOperation);
                         $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
                         $operation->setModePaiement($echeance->getModePaiement());
-                        $operation->setDate($echeanceOperation->getDateEcheance());
+                        $operation->setDate($verifDateEcheance);
                         $operation->setDebit($echeanceOperation->getMontantEcheance());
                         $operation->setEstPointe(0);
 
@@ -258,6 +310,18 @@ class MyTresorerieEcheanceController extends AbstractController
                 ],
                 'data' => $echeance->getDateEcheanceOne() ? $echeance->getDateEcheanceOne() : new DateTime()
             ])
+            ->add('dateFin',DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $echeance->getDateFin() ? $echeance->getDateFin() : null
+            ])
             ->add('type_operation', HiddenType::class, [
                 'data' => 'CRE',
             ])
@@ -276,7 +340,7 @@ class MyTresorerieEcheanceController extends AbstractController
                 'attr' => ['class' => 'form-control'],
                 'data' => $echeance->getTiersPersonne() ? $echeance->getTiersPersonne()->getId() : -1
             ])
-            ->add('societeID', SocieteBanqueChoiceType::class, [
+            ->add('societeID', SocieteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'data' => $echeance->getTiersSociete() ? $echeance->getTiersSociete()->getId() : -1
@@ -304,6 +368,20 @@ class MyTresorerieEcheanceController extends AbstractController
                 ),
                 'data' => $echeance->getTypeTiers() ? $echeance->getTypeTiers() : 'L'
             ))
+            ->add('nombre_echeances', ChoiceType::class, array(
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    '--- Sélectionnez la fréquence ---' => '-1',
+                    'Unique' => '1',
+                    'Permament' => '0',
+                ),
+                'data' => $echeance->getTypeTiers() ? $echeance->getTypeTiers() : 'L'
+            ))
+            ->add('recalcul_operation_anterieur', CheckboxType::class, [
+                'required' => false,
+                'data' => $echeance->getRecalculOperationAnterieur() ? $echeance->getRecalculOperationAnterieur() : true,
+            ])
             ->getform()
         ;
 
@@ -335,12 +413,13 @@ class MyTresorerieEcheanceController extends AbstractController
                 $em->persist($echeance);
                 $em->flush();
 
-                //On va créer les echeancesOperations
+                //On va créer l'echeancesOperations
                 $dateEcheance = $echeance->getDateEcheanceOne();
                 $echeanceOperation = new EcheanceOperation;
                 $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
                 $echeanceOperation->setDateEcheance($echeance->getDateEcheanceOne());
                 $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
+                $echeanceOperation->setEcheance($echeance);
 
                 $em->persist($echeanceOperation);
                 $em->flush();
@@ -424,6 +503,32 @@ class MyTresorerieEcheanceController extends AbstractController
             ->add('est_solde', CheckboxType::class, [
                 'data' => $echeance->getEstSolde() ? true : false,
                 'required' => false
+            ])
+            ->add('nombre_echeances', ChoiceType::class, array(
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    '--- Sélectionnez la fréquence ---' => '-1',
+                    'Unique' => '1',
+                    'Permament' => '0',
+                ),
+                'data' => $echeance->getTypeTiers() ? $echeance->getTypeTiers() : 'L'
+            ))
+            ->add('recalcul_operation_anterieur', CheckboxType::class, [
+                'required' => false,
+                'data' => $echeance->getRecalculOperationAnterieur() ? $echeance->getRecalculOperationAnterieur() : true,
+            ])
+            ->add('dateFin',DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $echeance->getDateFin() ? $echeance->getDateFin() : null
             ])
             ->getform()
         ;
@@ -518,9 +623,14 @@ class MyTresorerieEcheanceController extends AbstractController
     public function mytresorerie_echeancier_delete(Echeance $echeance, Request $requete, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('echeance_supprime_' . $echeance->getId(), $requete->request->get('csrf_token'))) {
-            $em->remove($echeance);
-            $em->flush();            
-            $this->addFlash("successMSG", "Echéance supprimé");
+            try {
+                $em->remove($echeance);
+                $em->flush();            
+                $this->addFlash("successMSG", "Echéance supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - L'échéance est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+
             return $this->redirectToRoute('app_myTresorerie_echeance');
         }
         else {

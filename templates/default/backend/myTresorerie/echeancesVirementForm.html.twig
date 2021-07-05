@@ -18,8 +18,19 @@
             </div>
         </header>
         <div class="panel-body">
+                <div class="col-md-3 alert alert-success text-justify">
+                    <p>
+                        Une échéance de type virement interne est une opération bancaire paramétrable selon 2 modes:
+							<div>
+                                <ul>
+                                    <li><strong>Unique:</strong> Une seule opération (passée ou future) sera ajoutée à la date d'échéance.</li>
+                                    <li><strong>Permanent:</strong> Une opération mensuelle avec ou sans date de fin. Il sera possible de recalculer les échéances des mois précédents.</li>
+                                </ul>
+                            </div>
+                    </p>
+                </div>
             {{ form_start(form)}}
-                <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-9">
                     <div class="form-group">
                         <label class="col-md-3 control-label">DATE ECHEANCE</label>
                         <div class="col-md-5">
@@ -31,7 +42,21 @@
                             </div>
                         </div>
                         <div class="col-md-2 text-right">
-                        SOLDE <div class="switch switch-sm switch-success">{{ form_widget(form.est_solde)}}</div>
+                        ARCHIVE <div class="switch switch-sm switch-success">{{ form_widget(form.est_solde)}}</div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="divRecalcul">
+                        <label class="col-md-3 control-label">DATE FIN</label>
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                {{ form_widget(form.dateFin) }}
+                            </div>
+                        </div>
+                        <div class="col-md-8 text-right" id="divRecalcul">
+                            Recalculer les échéances passées <div class="switch switch-sm switch-success">{{ form_widget(form.recalcul_operation_anterieur)}}</div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -53,7 +78,13 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-md-3 control-label">MONTANT TOTAL</label>
+                        <label class="col-md-3 control-label">MODE ECHEANCE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.nombre_echeances) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">MONTANT</label>
                         <div class="col-md-5">
                             {{ form_widget(form.montant_total) }}
                         </div>
@@ -66,5 +97,22 @@
             {{ form_end(form)}}
         </div>
     </section>
-    {% block footer_Script %}{% endblock %}
+    {% block footer_Script %}
+        <script>
+            afficheRecalculEcheance(document.getElementById("form_nombre_echeances").value);
+
+            document.getElementById("form_nombre_echeances").addEventListener("change", () => {
+                afficheRecalculEcheance(document.getElementById("form_nombre_echeances").value);
+            });
+
+            function afficheRecalculEcheance (choix) {
+                if (choix == 0) {
+                    document.getElementById("divRecalcul").style.display = "block";
+                }
+                else {
+                    document.getElementById("divRecalcul").style.display = "none";
+                }
+            }
+        </script>
+    {% endblock %}
 {% endblock %}

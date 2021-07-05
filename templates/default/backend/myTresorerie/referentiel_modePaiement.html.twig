@@ -1,5 +1,6 @@
 <div class="col-md-12 text-right">
-    <a href="{{ path('app_myTresorerie_referentiel_mode_paiement_add') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> MODE PAIMENT</button></a>
+    <a href="{{ path('app_myTresorerie_referentiel_mode_paiement_add') }}">
+    <button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> MODE PAIMENT</button></a>
 </div>
 
 {% if modesPaiement|length > 0 %}
@@ -28,15 +29,41 @@
                     </td>
                     <td>[{{ modePaiement.compte.banque.societe.nom|upper }}] {{ modePaiement.compte.libelle }}</td>
                     <td class="actions text-center">
-                        <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : modePaiement.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                        <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
+                        <a href="{{ path('app_myTresorerie_referentiel_mode_paiement_edit', { 'id' : modePaiement.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                        <a class="modal-basic" href="#modalBasicModePaiement{{ modePaiement.id }}"><i class="fa fa-trash-o"></i></a>
                     </td>
                 </tr>
+                {# Fenetre modèle pour valider la suppression d'une ficher modePaiement #}
+                <div id="modalBasicModePaiement{{ modePaiement.id }}" class="modal-block modal-block-primary mfp-hide">
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">Etes-vous sur de vouloir supprimer le mode de paiement ?</h2>
+                        </header>
+                        <div class="panel-body">
+                            <p>
+                                La suppression d'un mode de paiement ne pourra se faire si des opérations sont associés.
+                                En cas de doute, annuler votre action et archiver le mode de paiement.
+                            </p>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-md-12 text-right">
+                                    <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                    <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-modePaiement-effacer-{{modePaiement.id}}').submit();">CONFIRMER</button>
+                                    <form id="js-modePaiement-effacer-{{modePaiement.id}}"  action="{{ path('app_myTresorerie_referentiel_modePaiement_del', { 'id' : modePaiement.id }) }}" method="post" style="display:none;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('modePaiement_supprime_' ~ modePaiement.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                    </form>
+                                </div>
+                            </div>
+                        </footer>
+                    </section>
+                </div>
             {% endfor %}
         </tbody>
     </table>
 {% else %}
-    <div class="alert alert-success">
+    <div class="col-md-12 alert alert-success">
         Aucun mode de paiement n'a été enregistré pour le moment.
     </div>
 {% endif %}

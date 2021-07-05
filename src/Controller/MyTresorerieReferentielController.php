@@ -191,6 +191,7 @@ class MyTresorerieReferentielController extends AbstractController
         $form = $this->createFormBuilder($categorie)
             ->add('nom', TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'data' => $categorie->getNom() ? $categorie->getNom() : null 
             ])
             ->getform()
         ;
@@ -315,20 +316,25 @@ class MyTresorerieReferentielController extends AbstractController
             ])
             ->add('ChequeNumeroDebut',TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'required' => false,
             ])  
             ->add('ChequeNumeroFin',TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'required' => false,
             ])          
             ->add('numeroCarte',TextType::class, [
                 'attr' => ['class' => 'form-control'],
+                'required' => false,
             ])
             ->add('compteID',CompteChoiceType::class, [
                 'attr' => ['class' => 'form-control'],
                 'mapped' => false,
+                'data' => $modePaiement->getCompte() ? $modePaiement->getCompte()->getId() : null
             ])
             ->add('titulaireID',PersonneChoiceType::class, [
                 'attr' => ['class' => 'form-control'],
                 'mapped' => false,
+                'data' => $modePaiement->getTitulaire() ? $modePaiement->getTitulaire()->getId() : null
             ])
             ->getform()
         ;
@@ -338,7 +344,7 @@ class MyTresorerieReferentielController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $modePaiement->setTitulaire($personneRepo->find($requete->request->get('form')['titulaireID']));
             $modePaiement->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
-
+            
             $em->persist($modePaiement);
             $em->flush();
 
@@ -386,6 +392,72 @@ class MyTresorerieReferentielController extends AbstractController
                 $this->addFlash("successMSG", "Enregistrement supprimé");
             } catch (\Exception $e) {
                 $this->addFlash("errorMSG", "Suppression impossible - Le compte est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+
+            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/referentiel/modePaiement/del/{id}", name="app_myTresorerie_referentiel_modePaiement_del", methods ="DELETE")
+     */
+    public function mytresorerie_referentiel_modePaiementDelete(ModePaiement $modePaiement, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('modePaiement_supprime_' . $modePaiement->getId(), $requete->request->get('csrf_token'))) {
+            try {
+                $em->remove($modePaiement);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - Le mode de paiement est référencé dans un autre module. Procédez à un archivage à la place");
+            }
+
+            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/referentiel/categorie/del/{id}", name="app_myTresorerie_referentiel_categorie_del", methods ="DELETE")
+     */
+    public function mytresorerie_referentiel_categorieDelete(Categorie $categorie, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('categorie_supprime_' . $categorie->getId(), $requete->request->get('csrf_token'))) {
+            try {
+                $em->remove($categorie);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - La catégorie est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+
+            return $this->redirectToRoute('app_myTresorerie_referentiel');
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
+
+    /**
+     * @Route("/tresorerie/referentiel/sousCategorie/del/{id}", name="app_myTresorerie_referentiel_sousCategorie_del", methods ="DELETE")
+     */
+    public function mytresorerie_referentiel_sousCategorieDelete(SousCategorie $sousCategorie, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('sousCategorie_supprime_' . $sousCategorie->getId(), $requete->request->get('csrf_token'))) {
+            try {
+                $em->remove($sousCategorie);
+                $em->flush();           
+            
+                $this->addFlash("successMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - La sous catégorie est référencée dans un autre module. Procédez à un archivage à la place");
             }
 
             return $this->redirectToRoute('app_myTresorerie_referentiel');

@@ -44,7 +44,7 @@
                             {{ form_widget(form.numeroCarte)}}
                         </div>
                     </div>
-                    <div id="chequierForm">
+                    <div class="form-group" id="chequierForm">
                         <div class="form-group">
                             <label class="col-md-3 control-label">N° début chéquier</label>
                             <div class="col-md-6">
@@ -57,9 +57,9 @@
                                 {{ form_widget(form.ChequeNumeroFin)}}
                             </div>
                         </div> 
-                        <div class="col-md-9 text-right">
-                            <input type="submit" class="btn btn-sm btn-success" value="VALIDER"/>
-                        </div>
+                    </div>
+                    <div class="col-md-9 text-right">
+                        <input type="submit" class="btn btn-sm btn-success" value="VALIDER"/>
                     </div>    
                 </div>
             {{ form_end(form)}}

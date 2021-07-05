@@ -14,27 +14,79 @@
         </thead>
         <tbody>
         {% for categorie in categories %}
-                <tr>
-                    <td><strong>{{ categorie.nom }}</strong></td>
-                    <td class="actions text-center">
-                        <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : categorie.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                        <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
-                    </td>
-                </tr>
-                {% if sousCategories|length > 0 %}
-                    {% for sousCategorie in sousCategories %}
-                        {% if categorie.nom == sousCategorie.categorie.nom %}
-                            <tr>
-                                <td><i class="fa fa-caret-right"></i> {{ sousCategorie.nom }}</td>
-                                <td class="actions text-center">
-                                    <a href="{{ path('app_myTresorerie_referentiel_sous_categorie_edit', { 'id' : sousCategorie.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                    <a href="#" class="on-default remove-row"><i class="fa fa-trash-o"></i></a>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
+            <tr>
+                <td><strong>{{ categorie.nom }}</strong></td>
+                <td class="actions text-center">
+                    <a href="{{ path('app_myTresorerie_referentiel_categorie_edit', { 'id' : categorie.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                    <a class="modal-basic" href="#modalBasicCategorie{{ categorie.id }}"><i class="fa fa-trash-o"></i></a>
+                </td>
+            </tr>
+            {% if sousCategories|length > 0 %}
+                {% for sousCategorie in sousCategories %}
+                    {% if categorie.nom == sousCategorie.categorie.nom %}
+                        <tr>
+                            <td><i class="fa fa-caret-right"></i> {{ sousCategorie.nom }}</td>
+                            <td class="actions text-center">
+                                <a href="{{ path('app_myTresorerie_referentiel_sous_categorie_edit', { 'id' : sousCategorie.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
+                                <a class="modal-basic" href="#modalBasicSousCategorie{{ sousCategorie.id }}"><i class="fa fa-trash-o"></i></a>
+                            </td>
+                        </tr>
+                    {# Fenetre modèle pour valider la suppression d'une ficher sousCategorie #}
+                    <div id="modalBasicSousCategorie{{ sousCategorie.id }}" class="modal-block modal-block-primary mfp-hide">
+                        <section class="panel">
+                            <header class="panel-heading">
+                                <h2 class="panel-title">Etes-vous sur de vouloir supprimer la sous catégorie ?</h2>
+                            </header>
+                            <div class="panel-body">
+                                <p>
+                                    La suppression d'une sous catégorie ne pourra se faire si des opérations sont associées.
+                                    En cas de doute, annuler votre action et archiver la sous catégorie.
+                                </p>
+                            </div>
+                            <footer class="panel-footer">
+                                <div class="row">
+                                    <div class="col-md-12 text-right">
+                                        <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                        <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-sousCategorie-effacer-{{sousCategorie.id}}').submit();">CONFIRMER</button>
+                                        <form id="js-sousCategorie-effacer-{{sousCategorie.id}}"  action="{{ path('app_myTresorerie_referentiel_sousCategorie_del', { 'id' : sousCategorie.id }) }}" method="post" style="display:none;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('sousCategorie_supprime_' ~ sousCategorie.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                        </form>
+                                    </div>
+                                </div>
+                            </footer>
+                        </section>
+                    </div>    
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {# Fenetre modèle pour valider la suppression d'une ficher categorie #}
+            <div id="modalBasicCategorie{{ categorie.id }}" class="modal-block modal-block-primary mfp-hide">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Etes-vous sur de vouloir supprimer la catégorie ?</h2>
+                    </header>
+                    <div class="panel-body">
+                        <p>
+                            La suppression d'une catégorie ne pourra se faire si des opérations ou des sous catégories sont associés.
+                            En cas de doute, annuler votre action et archiver la catégoriest.
+                        </p>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-md-12 text-right">
+                                <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-categorie-effacer-{{categorie.id}}').submit();">CONFIRMER</button>
+                                <form id="js-categorie-effacer-{{categorie.id}}"  action="{{ path('app_myTresorerie_referentiel_categorie_del', { 'id' : categorie.id }) }}" method="post" style="display:none;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token('categorie_supprime_' ~ categorie.id) }}">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                </form>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+            </div> 
+        {% endfor %}
         </tbody>
     </table>
 {% else %}

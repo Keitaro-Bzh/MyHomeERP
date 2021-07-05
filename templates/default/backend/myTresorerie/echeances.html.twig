@@ -86,13 +86,36 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-echeance-effacer-{{echeance.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                                        <form id="js-echeance-effacer-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_del', { 'id' : echeance.id }) }}" method="post" style="display:none;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_supprime_' ~ echeance.id) }}">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                        </form>
+                                        <a class="modal-basic" href="#modalBasicEcheance{{ echeance.id }}"><i class="fa fa-trash-o"></i></a>
                                     </td>
                                 </tr>
+
+                                {# Fenetre modèle pour valider la suppression d'une ficher echeance #}
+                                <div id="modalBasicEcheance{{ echeance.id }}" class="modal-block modal-block-primary mfp-hide">
+                                    <section class="panel">
+                                        <header class="panel-heading">
+                                            <h2 class="panel-title">Etes-vous sur de vouloir supprimer l'échéance?</h2>
+                                        </header>
+                                        <div class="panel-body">
+                                            <p>
+                                                La suppression d'une échéance peut impacter les autres modules.
+                                                En cas de doute, annulez votre action et soldez l'échéance.
+                                            </p>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-md-12 text-right">
+                                                    <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                    <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-echeance-effacer-{{echeance.id}}').submit();">CONFIRMER</button>
+                                                    <form id="js-echeance-effacer-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_del', { 'id' : echeance.id }) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_supprime_' ~ echeance.id) }}">
+                                                        <input type="hidden" name="_method" value="DELETE">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </div>
                             {% endif %}
                         {% endfor %}
                         </tbody>
@@ -154,5 +177,8 @@
             </div>
         </div>
     </section>
-    {% block footer_Script %}{% endblock %}
+{% endblock %}
+
+{% block footer_script %}
+    <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
 {% endblock %}
