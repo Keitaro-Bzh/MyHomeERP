@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div class="col-md-offset-1 col-md-5 alert alert-info text-center">
-                <a class="modal-basic btn btn-sm btn-primary" href="#modalBasic"><i class="fa fa-plus"> NOUVELLE PERIODE DE FACTURATION</i></a>
+                <a class="modal-basic btn btn-sm btn-primary" href="#modalBasic"><i class="fa fa-plus"> NOUVELLE PERIODE FINANCIERE</i></a>
                 {% if (contratFacturations|length > 0) %}
                     <hr />
                     <div class="text-left">
@@ -64,12 +64,6 @@
                         </div>
                         <div class="col-md-3 text-right">
                             <i class="fa fa-pencil"></i>
-                                {#{% if (contrat.facturable) %}<a href="{{ path('app_myContrats_facturation_form', { 'id' : contrat.id }) }}"><i class="fa fa-folder-open"></i></a>{% endif %}
-                                            <a href="{{ path('app_myContrats_edit', { 'id' : contrat.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-contrat-effacer-{{contrat.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                                            <form id="js-contrat-effacer-{{contrat.id}}"  action="{{ path('app_myContrats_del', { 'id' : contrat.id }) }}" method="post" style="display:none;">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('contrat_supprime_' ~ contrat.id) }}">
-                                                <input>#}
                         </div>
                         <br />
                         <p class='col-md-12'>
@@ -100,7 +94,7 @@
                 {% else %}
                     <hr />
                     <div class="alert alert-success">
-                        Aucune période de facturation n'a été enregistrée pour le moment.
+                        Aucune période financière n'a été enregistrée pour le moment.
                     </div>
                 {% endif %}
             </div>
@@ -116,6 +110,13 @@
                     <code class="h5 text-primary">SAISIE D'UNE PERIODE D'UNE FACTURATION</code><br />
                     (<span class='required'>*</span> champ requis)
                 </p><br />
+                <div class="form-group">
+                    <label class="col-md-4 control-label">TYPE MOUVEMENT <span class='required'>*</span></label>
+                    <div class="col-md-8">
+                        {{ form_widget(form.type_mouvement) }}
+                        <span class="text-danger">{{ form_errors(form.type_mouvement)}}</span>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="col-md-4 control-label">COMPTE <span class='required'>*</span></label>
                     <div class="col-md-8">
@@ -145,6 +146,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group text-right">
+                    <label class="col-md-12 control-label">MONTANT IDENTIQUE A CHAQUE ECHEANCE
+                    {{ form_widget(form.montant_fraction) }}</label>
+                </div>
                 <div class="form-group">
                     <label class="col-md-4 control-label">MONTANT <span class='required'>*</span></label>
                     <div class="col-md-8">
@@ -165,7 +170,6 @@
                         {{ form_widget(form.frequence_paiement) }}
                     </div>
                 </div>
-                
                 <div class="form-group text-right">
                     <label class="col-md-12 control-label">RECALCULER LES OPERTATIONS PASSEES
                     {{ form_widget(form.recalcul_operation_anterieur) }}</label>

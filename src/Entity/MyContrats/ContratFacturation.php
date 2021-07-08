@@ -74,6 +74,21 @@ class ContratFacturation
      */
     private $recalcul_operation_anterieur;
 
+    /**
+     * @ORM\Column(type="string", length=1)
+     */
+    private $type_mouvement;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $est_archive;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $montant_fraction;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -183,6 +198,42 @@ class ContratFacturation
     public function setRecalculOperationAnterieur(?bool $recalcul_operation_anterieur): self
     {
         $this->recalcul_operation_anterieur = $recalcul_operation_anterieur;
+
+        return $this;
+    }
+
+    public function getTypeMouvement(): ?string
+    {
+        return $this->type_mouvement;
+    }
+
+    public function setTypeMouvement(string $type_mouvement): self
+    {
+        $this->type_mouvement = $type_mouvement;
+
+        return $this;
+    }
+
+    public function getEstArchive(): ?bool
+    {
+        return $this->est_archive;
+    }
+
+    public function setEstArchive(?bool $est_archive): self
+    {
+        $this->est_archive = $est_archive;
+
+        return $this;
+    }
+
+    public function getMontantFraction(): ?bool
+    {
+        return $this->montant_fraction;
+    }
+
+    public function setMontantFraction(?bool $montant_fraction): self
+    {
+        $this->montant_fraction = $montant_fraction;
 
         return $this;
     }

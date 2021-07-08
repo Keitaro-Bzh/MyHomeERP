@@ -644,6 +644,7 @@ class ComposerStaticInit56b6fccbf797117dff37d46974afbda8
         'App\\Kernel' => __DIR__ . '/../..' . '/src/Kernel.php',
         'App\\Repository\\MyContacts\\PersonneRepository' => __DIR__ . '/../..' . '/src/Repository/MyContacts/PersonneRepository.php',
         'App\\Repository\\MyContacts\\SocieteRepository' => __DIR__ . '/../..' . '/src/Repository/MyContacts/SocieteRepository.php',
+        'App\\Repository\\MyContratsContratFacturationRepository' => __DIR__ . '/../..' . '/src/Repository/MyContratsContratFacturationRepository.php',
         'App\\Repository\\MyContrats\\ContratFacturationRepository' => __DIR__ . '/../..' . '/src/Repository/MyContrats/ContratFacturationRepository.php',
         'App\\Repository\\MyContrats\\ContratRepository' => __DIR__ . '/../..' . '/src/Repository/MyContrats/ContratRepository.php',
         'App\\Repository\\MyFinances\\BanqueRepository' => __DIR__ . '/../..' . '/src/Repository/MyFinances/BanqueRepository.php',

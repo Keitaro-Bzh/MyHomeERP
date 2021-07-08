@@ -45,6 +45,7 @@ return array(
     'App\\Kernel' => $baseDir . '/src/Kernel.php',
     'App\\Repository\\MyContacts\\PersonneRepository' => $baseDir . '/src/Repository/MyContacts/PersonneRepository.php',
     'App\\Repository\\MyContacts\\SocieteRepository' => $baseDir . '/src/Repository/MyContacts/SocieteRepository.php',
+    'App\\Repository\\MyContratsContratFacturationRepository' => $baseDir . '/src/Repository/MyContratsContratFacturationRepository.php',
     'App\\Repository\\MyContrats\\ContratFacturationRepository' => $baseDir . '/src/Repository/MyContrats/ContratFacturationRepository.php',
     'App\\Repository\\MyContrats\\ContratRepository' => $baseDir . '/src/Repository/MyContrats/ContratRepository.php',
     'App\\Repository\\MyFinances\\BanqueRepository' => $baseDir . '/src/Repository/MyFinances/BanqueRepository.php',

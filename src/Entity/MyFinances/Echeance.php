@@ -142,6 +142,11 @@ class Echeance
      */
     private $date_fin;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $montant_fraction;
+
     public function __construct()
     {
         $this->echeance_operation = new ArrayCollection();
@@ -437,6 +442,18 @@ class Echeance
     public function setDateFin(?\DateTimeInterface $date_fin): self
     {
         $this->date_fin = $date_fin;
+
+        return $this;
+    }
+
+    public function getMontantFraction(): ?bool
+    {
+        return $this->montant_fraction;
+    }
+
+    public function setMontantFraction(?bool $montant_fraction): self
+    {
+        $this->montant_fraction = $montant_fraction;
 
         return $this;
     }

@@ -196,7 +196,8 @@ class MyTresorerieEcheanceController extends AbstractController
 
                 $nbEcheances = $echeance->getNombreEcheances();
                 
-                // Dans le cas ou l'on a plusieurs paiements, on va créer une entrée par paiement
+                // Dans le cas ou l'on a plusieurs paiements, on va créer calculer le montant de 
+                // l'échéance en fonction du nombre de paiement
                 if ($nbEcheances > 0) {
                     $montantEcheance = round($echeance->getMontantTotal() / $nbEcheances,2,PHP_ROUND_HALF_UP);
                 }
@@ -216,6 +217,11 @@ class MyTresorerieEcheanceController extends AbstractController
                             $nbEcheances = 12 * $nbAnnee + $nbMois +1;
                         }
                     }
+                    // On ne recalcule pas les dates antérieurs, donc on va n'insérer qu'une échéance
+                    // correspondant au mois en cours
+                    elseif ($echeance->getDateEcheanceOne() <= new DateTime(date("Y-m-t"))) {
+                        $nbEcheances = 1;
+                    }
                 }
 
                 $dateEcheance = $echeance->getDateEcheanceOne();
@@ -232,8 +238,17 @@ class MyTresorerieEcheanceController extends AbstractController
                         else {
                             $dateMoisCours = $dateEcheance->format('Y') . '-' . $dateJour->format('m') . '-' .$dateEcheance->format('d');
                         }
-                        dd(new dateTime($dateMoisCours));
-                        $dateEcheance = new dateTime($dateMoisCours);
+                        if($echeance->getDateFin() && $echeance->getDateFin() < new dateTime($dateMoisCours)) {
+                            // La date de fin des échéances est antérieur à la date calculée
+                            // il faut la remodeler
+                            if ($echeance->getDateFin()->format('d') >= $dateEcheance->format('d')) {
+                                $dateMoisCours = $dateEcheance->format('Y') . '-' . $echeance->getDateFin()->format('m') . '-' . $dateEcheance->format('d');
+                            } 
+                            else {
+                                $dateMoisCours = $dateEcheance->format('Y') . '-' . ($echeance->getDateFin()->format('m') - 1) . '-' . $dateEcheance->format('d');
+                            }
+                        }
+                        $echeanceOperation->setDateEcheance(new dateTime($dateMoisCours));
                     }
                     else {
                         $echeanceOperation->setDateEcheance($dateEcheance);
@@ -243,11 +258,12 @@ class MyTresorerieEcheanceController extends AbstractController
                         $echeanceOperation->setMontantEcheance($echeance->getMontantTotal() - (($montantEcheance) * ($i - 1)));
                     }
                     $echeanceOperation->setEcheance($echeance);
-                    
+                
                     $em->persist($echeanceOperation);
                     $em->flush();
 
-                    // On va créer les opérations antérieurs à la fin du mois
+                    // On va créer les opérations jusqu'à la fin du mois
+                    // ou celle du mois si c'est elle
                     $date = New DateTime('now');
                     $verifDateEcheance = isset($dateMoisCours) ? $dateMoisCours : $echeanceOperation->getDateEcheance();
                     if ($verifDateEcheance < $date->modify('last day of this month')) {
@@ -270,8 +286,26 @@ class MyTresorerieEcheanceController extends AbstractController
                         $em->persist($operation);
                         $em->flush();
                     }
-                    
+                    // On va analyser la date d'échéance suivante
                     $dateEcheance = date_modify($dateEcheance, '+1 month');
+                    
+                    
+                    // on va vérifier si l'on n'est pas sur une fin de mois avec une échéance calculée sur le
+                    // mois m+2 et non m+1
+                    // dd($echeanceOperation->getDateEcheance()->format('d'));
+                    // if ($dateEcheance->format('d') != $echeance->getDateEcheanceOne()->format('d')) {
+                    //     if ($dateEcheance->format('m') != ($moisEcheance + 1)) {
+                    //         dd("mois suivat");
+                    //         $dateEcheance = new DateTime($dateEcheance->format('Y') -1 . '-'  . ($dateEcheance->format('m') -1) . '-t');
+                    //     }
+                    //     else {
+                    //         dd("mois cours");
+                    //         $dateEcheance = new DateTime($dateEcheance->format('Y') -1 . '-'  . ($dateEcheance->format('m') -1) . '-' . $echeance->getDateEcheanceOne()->format('Y'));
+                    //     }
+                    // }
+                    // else {
+                    //     dd("bah la");
+                    // }
                 }
             }
             else {
@@ -320,6 +354,7 @@ class MyTresorerieEcheanceController extends AbstractController
                     'data-input-mask' => '99-99-9999',
                     'placeholder' => '__/__/____'
                 ],
+                'required' => false,
                 'data' => $echeance->getDateFin() ? $echeance->getDateFin() : null
             ])
             ->add('type_operation', HiddenType::class, [

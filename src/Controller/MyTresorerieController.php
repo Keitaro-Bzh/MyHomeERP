@@ -443,7 +443,7 @@ class MyTresorerieController extends AbstractController
                 $operationCredit->setCredit($requete->request->get('form')['montant']);
                 $operationCredit->setTypeOperation('VII');
                 $operationCredit->setVirementID($idVirement);
-                $operationDebit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
+                $operationCredit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
                 $operationCredit->setCompte($compteRepo->find($requete->request->get('form')['compteCreditID']));
 
                 $em->persist($operationCredit);

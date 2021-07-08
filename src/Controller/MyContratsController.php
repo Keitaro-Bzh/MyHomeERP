@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\MyContrats\Contrat;
 use App\Entity\MyContrats\ContratFacturation;
 use App\Entity\MyFinances\Echeance;
+use App\Entity\MyFinances\Operation;
 use App\Entity\MyFinances\EcheanceOperation;
 use App\Form\CompteChoiceType;
 use App\Form\SocieteChoiceType;
@@ -143,6 +144,14 @@ class MyContratsController extends AbstractController
         }
 
         $form = $this->createFormBuilder($contratFacturation)
+            ->add('type_mouvement', ChoiceType::class, [
+                'choices' => array(
+                    'Débit' => 'D',
+                    'Crédit' => 'C',
+                ),
+                'attr' => ['class' => 'form-control'],
+                'data' => $contratFacturation->getFrequencePaiement()
+            ])
             ->add('date_debut', DateType::class, [
                 'widget' => 'single_text',
                 'format' => 'dd/MM/yyyy',
@@ -189,8 +198,13 @@ class MyContratsController extends AbstractController
             ->add('montant', NumberType::class, [
                 'attr' => ['class' => 'form-control']
             ])
+            ->add('montant_fraction', CheckboxType::class, [
+                'required' => false,
+                'data' => true
+            ])
             ->add('recalcul_operation_anterieur', CheckboxType::class, [
                 'required' => false,
+                'data' => true
             ])
             ->getform()
         ;
@@ -211,13 +225,43 @@ class MyContratsController extends AbstractController
                 $em->flush();
                 
                 // On va générer les opérations d'échéance associées 
-                for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
-                    $echeanceOperation = new EcheanceOperation;
-                    $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
-                    $echeanceOperation->setEcheance($echeance);
-                    
-                    $em->persist($echeanceOperation);
-                    $em->flush();
+                if (count($echeance->getTabEcheanceOperations()) > 0) {
+                    for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
+                        $echeanceOperation = new EcheanceOperation;
+                        $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
+                        $echeanceOperation->setEcheance($echeance);
+                        
+                        $em->persist($echeanceOperation);
+                        $em->flush();
+
+                            // On va créer les opérations jusqu'à la fin du mois
+                            // ou celle du mois si c'est elle
+                            if ($echeanceOperation->getDateEcheance() < New DateTime('last day of this month')) {
+                                $operation = new Operation;
+                                $operation->setCompte($echeance->getCompte());
+                                $operation->setDescription($echeance->getDescription());
+                                $operation->setTypeOperation($echeance->getTypeOperation());
+                                $operation->setTypeTiers($echeance->getTypeTiers());
+                                $operation->setTiersLibelle($echeance->getTiersLibelle());
+                                $operation->setPersonne($echeance->getTiersPersonne());
+                                $operation->setSociete($echeance->getTiersSociete());
+                                $operation->setCategorie($echeance->getSousCategorie());
+                                $operation->setEcheanceOperation($echeanceOperation);
+                                $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
+                                $operation->setModePaiement($echeance->getModePaiement());
+                                $operation->setDate($echeanceOperation->getDateEcheance());
+                                if ($contratFacturation->getTypeMouvement() == 'C') {
+                                    $operation->setCredit($echeanceOperation->getMontantEcheance());
+                                }
+                                else{
+                                    $operation->setDebit($echeanceOperation->getMontantEcheance());
+                                }
+                                $operation->setEstPointe(0);
+
+                                $em->persist($operation);
+                                $em->flush();
+                            }
+                    }
                 }
 
                 $contratFacturation->setEcheance($echeance);

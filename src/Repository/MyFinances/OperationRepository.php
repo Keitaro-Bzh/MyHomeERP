@@ -22,7 +22,7 @@ class OperationRepository extends ServiceEntityRepository
     public function findOperationsEcheancesNonRapprocheesAll()
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.est_pointe = false')
+            ->andWhere('c.est_pointe is null')
             ->orWhere('c.est_pointe = 0')
             ->andWhere('c.echeance_operation is not null')
             ->orderBy('c.date', 'DESC')
@@ -35,7 +35,7 @@ class OperationRepository extends ServiceEntityRepository
     {
 
         return $this->createQueryBuilder('c')
-            ->andWhere('c.est_pointe = false')
+            ->andWhere('c.est_pointe is null')
             ->orWhere('c.est_pointe = 0')
             ->orderBy('c.date', 'DESC')
             ->getQuery()
@@ -46,7 +46,7 @@ class OperationRepository extends ServiceEntityRepository
     public function findOperationsNonRapprochees($compte)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.est_pointe = false')
+            ->andWhere('c.est_pointe is null')
             ->orWhere('c.est_pointe = 0')
             ->andWhere('c.Compte = :compte')
             ->andWhere('c.echeance_operation IS NULL')

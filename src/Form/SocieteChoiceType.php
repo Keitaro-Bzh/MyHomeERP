@@ -12,7 +12,7 @@ class SocieteChoiceType extends AbstractType
 
     public function __construct(SocieteRepository $societeRepo)
     {
-        $this->societesList = $societeRepo->findAll();
+        $this->societesList = $societeRepo->findActif();
     }
     public function configureOptions(OptionsResolver $resolver): void
     {
