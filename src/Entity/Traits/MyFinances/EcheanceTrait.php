@@ -100,8 +100,8 @@ trait EcheanceTrait
         }
         
         $dateEcheanceOne = clone($this->getDateEcheanceOne()) ;
-        $dateEcheanceDiff = clone($dateEcheanceOne);  
-        $dateJour = New DateTime();
+        $dateEcheanceDiff = clone($this->getDateEcheanceOne());  
+        $dateJourEcheanceOne = $dateEcheanceOne->format('d');
         $dateFinMoisCours = new DateTime(date("Y-m-t"));
         if (($this->getNombreEcheances() > 0 ) || ($this->getNombreEcheances() == 0 && $this->getDateEcheanceOne() <= $dateFinMoisCours)) {
             // On va gérer une particularité sur la date dans le cas ou on ne demande pas le recalcul pour une echéance permanente
@@ -115,8 +115,7 @@ trait EcheanceTrait
                     }
                 }
             }
-        
-//dd($date_fin_boucle); 
+
             // On ne va créer notre tableau d'échéance opération uniquement
             // si la première échéance est sur le mois en cours
             if ($dateEcheanceOne <= $dateFinMoisCours) {
@@ -130,30 +129,44 @@ trait EcheanceTrait
                     // On va calculer le montant de l'échéance en fonction du nombre d'échéance
                     // Mais dans le cas de plusieurs échéances, on va calculer la dernière échéance
                     // qui soldera le montant total
-                    if ($this->getNombreEcheances() == 0 ||$this->getMontantFraction = false) {
+                    if ($this->getNombreEcheances() == 0) {
                         $echeanceOperation->setMontantEcheance($this->getMontantTotal());
                     }
                     else {
-                        if ($numEcheance < $this->getNombreEcheances()) {
-                            $montantTotalEcheance = $montantTotalEcheance + round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP);
-                            $echeanceOperation->setMontantEcheance(round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP));
+                        if ($this->getMontantFraction = true) {
+                            if ($numEcheance < $this->getNombreEcheances()) {
+                                $montantTotalEcheance = $montantTotalEcheance + round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP);
+                                $echeanceOperation->setMontantEcheance(round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP));
+                            }
+                            else {
+                                $echeanceOperation->setMontantEcheance($this->getMontantTotal() - $montantTotalEcheance);
+                            }
                         }
                         else {
-                            $echeanceOperation->setMontantEcheance($this->getMontantTotal() - $montantTotalEcheance);
+                            $echeanceOperation->setMontantEcheance($this->getMontantTotal());
                         }
                     }
-
                     // On peuple nos tableaux
                     $this->tabEcheanceOperations[$numEcheance] = $echeanceOperation;
                     // $this->tabOperations[$numEcheance] = $this->getRecalculOperationAnterieur() ? $operation : null;
 
                     // On passe à l'échéance suivante
                     $numEcheance++;
-                    $dateEcheanceOne = $dateEcheanceOne->add(new DateInterval("P" . $this->getFrequenceNombrePaiement() . $this->getFrequencePaiement()));
+                    
+                    
                     // Particularité pour le calcul du nombre de mois pour les jours 29,30,31
-                    // qui calcule la date d'échéance sur le mois suivant.                
-                    if($dateEcheanceDiff->format("d") != $dateEcheanceOne->format("d")) {
-                        $dateEcheanceOne->sub(new DateInterval("P" . $dateEcheanceOne->format("d") . "D"));
+                    // qui calcule la date d'échéance sur le mois suivant.  
+                    if ($dateJourEcheanceOne > 28) {
+                        if ($dateEcheanceOne->format('m')+1 <= 12) {
+                            $dateEcheanceOne = new DateTime($dateEcheanceOne->format('Y').'-'.($dateEcheanceOne->format('m')+1).'-28');
+                        }
+                        else {
+                            $dateEcheanceOne = new DateTime(($dateEcheanceOne->format('Y')+1).'-'.$dateEcheanceOne->format('m').'-28');
+                        }
+                        
+                    }
+                    else {
+                        $dateEcheanceOne = $dateEcheanceOne->add(new DateInterval("P" . $this->getFrequenceNombrePaiement() . $this->getFrequencePaiement()));
                     }
                 } while ($dateEcheanceOne <= $date_fin_boucle);
             }

@@ -147,8 +147,8 @@
                     </div>
                 </div>
                 <div class="form-group text-right">
-                    <label class="col-md-12 control-label">MONTANT IDENTIQUE A CHAQUE ECHEANCE
-                    {{ form_widget(form.montant_fraction) }}</label>
+                    <label class="col-md-12 control-label">RECALCULER LES OPERATIONS PASSEES
+                    {{ form_widget(form.recalcul_operation_anterieur) }}</label>
                 </div>
                 <div class="form-group">
                     <label class="col-md-4 control-label">MONTANT <span class='required'>*</span></label>
@@ -161,6 +161,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group text-right">
+                    <label class="col-md-12 control-label">CORRESPOND AU MONTANT GLOBAL
+                    {{ form_widget(form.montant_fraction) }}</label>
+                </div>
                 <div class="form-group">
                     <label class="col-md-4 control-label">FREQUENCE <span class='required'>*</span></label>
                     <div class="col-md-2">
@@ -169,10 +173,6 @@
                     <div class="col-md-6">
                         {{ form_widget(form.frequence_paiement) }}
                     </div>
-                </div>
-                <div class="form-group text-right">
-                    <label class="col-md-12 control-label">RECALCULER LES OPERTATIONS PASSEES
-                    {{ form_widget(form.recalcul_operation_anterieur) }}</label>
                 </div>
                 <div class="col-md-12 text-right">
 					<button class="btn btn-sm btn-warning modal-dismiss">ANNULER</button>

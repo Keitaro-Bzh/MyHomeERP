@@ -286,26 +286,9 @@ class MyTresorerieEcheanceController extends AbstractController
                         $em->persist($operation);
                         $em->flush();
                     }
+                    
                     // On va analyser la date d'échéance suivante
                     $dateEcheance = date_modify($dateEcheance, '+1 month');
-                    
-                    
-                    // on va vérifier si l'on n'est pas sur une fin de mois avec une échéance calculée sur le
-                    // mois m+2 et non m+1
-                    // dd($echeanceOperation->getDateEcheance()->format('d'));
-                    // if ($dateEcheance->format('d') != $echeance->getDateEcheanceOne()->format('d')) {
-                    //     if ($dateEcheance->format('m') != ($moisEcheance + 1)) {
-                    //         dd("mois suivat");
-                    //         $dateEcheance = new DateTime($dateEcheance->format('Y') -1 . '-'  . ($dateEcheance->format('m') -1) . '-t');
-                    //     }
-                    //     else {
-                    //         dd("mois cours");
-                    //         $dateEcheance = new DateTime($dateEcheance->format('Y') -1 . '-'  . ($dateEcheance->format('m') -1) . '-' . $echeance->getDateEcheanceOne()->format('Y'));
-                    //     }
-                    // }
-                    // else {
-                    //     dd("bah la");
-                    // }
                 }
             }
             else {

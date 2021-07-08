@@ -200,7 +200,6 @@ class MyContratsController extends AbstractController
             ])
             ->add('montant_fraction', CheckboxType::class, [
                 'required' => false,
-                'data' => true
             ])
             ->add('recalcul_operation_anterieur', CheckboxType::class, [
                 'required' => false,
@@ -230,7 +229,6 @@ class MyContratsController extends AbstractController
                         $echeanceOperation = new EcheanceOperation;
                         $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
                         $echeanceOperation->setEcheance($echeance);
-                        
                         $em->persist($echeanceOperation);
                         $em->flush();
 

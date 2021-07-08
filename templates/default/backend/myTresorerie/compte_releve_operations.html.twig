@@ -4,8 +4,8 @@
             <thead>
                 <tr>
                     <th class="text-center col-md-1">Date</th>
-                    <th class="text-center col-md-4">Tiers</th>
-                    <th class="text-center col-md-4">Description</th>
+                    <th class="text-center col-md-4">Tiers/Description</th>
+                    <th class="text-center col-md-4">Catégorie</th>
                     <th class="text-center col-md-1">Débit</th>
                     <th class="text-center col-md-1">Crédit</th>
                     <th class="text-center col-md-1">Options</th>
@@ -14,33 +14,40 @@
             <tbody>
                 {% for operation in operations %}
                     <tr>
-                        <td class="text-center">{{ operation.date|date('d/m/y') }}</td>
-                        <td>
+                        <td class="text-center">
+                            {{ operation.date|date('d/m/y') }}<br />
+                            {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "DEB" )%}<i class="fa fa-chevron-circle-left"></i>{% endif %}
+                            {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "CRE" )%}<i class="fa fa-chevron-circle-right"></i>{% endif %}
+                            {% if operation.modePaiementTrigramme == 'PRE' %}<i class="fa fa-caret-square-o-left"></i>{% endif %}
+                            {% if operation.modePaiementTrigramme == 'CB' %}<i class="fa fa-credit-card"></i>{% endif %}
+                            {% if operation.modePaiementTrigramme == 'CHQ' %}<i class="fa fa-file-text-o"></i>{% endif %}
+                            {% if operation.modePaiementTrigramme == 'PAY' %}<i class="fa fa-bitcoin"></i>{% endif %}
+                            {% if operation.modePaiementTrigramme == 'DEP' %}<i class="fa fa-caret-square-o-right"></i>{% endif %}
                             {% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i> Retrait espèces {% endif %}
-                            {% if operation.typeOperation == "VII" %}
-                                <i class="fa fa-exchange"></i> {{ operation.compte.titulaire.nom }} {{ operation.compte.titulaire.prenom }}
-                                {% if operation.compte.cotitulaire %} / {{ operation.compte.cotitulaire.nom }} {{ operation.compte.cotitulaire.prenom }}{% endif %}
-                            {% endif %}
-                            {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE") %}
-                                {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "DEB" )%}<i class="fa fa-chevron-circle-left"></i>{% endif %}
-                                {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "CRE" )%}<i class="fa fa-chevron-circle-right"></i>{% endif %}
-                                {% if operation.modePaiementTrigramme == 'PRE' %}<i class="fa fa-caret-square-o-left"></i>{% endif %}
-                                {% if operation.modePaiementTrigramme == 'CB' %}<i class="fa fa-credit-card"></i>{% endif %}
-                                {% if operation.modePaiementTrigramme == 'CHQ' %}<i class="fa fa-file-text-o"></i>{% endif %}
-                                {% if operation.modePaiementTrigramme == 'PAY' %}<i class="fa fa-bitcoin"></i>{% endif %}
-                                {% if operation.modePaiementTrigramme == 'DEP' %}<i class="fa fa-caret-square-o-right"></i>{% endif %}
-                                {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
-                                {% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
-                                {% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
-                                
-                            {% endif %}
+                            {% if operation.typeOperation == "VII" %}<i class="fa fa-exchange"></i>{% endif %}
+                        </td>
+                        <td>
+                            <strong>
+                                {% if operation.typeOperation == "VII" %}
+                                    {{ operation.compte.titulaire.nom }} {{ operation.compte.titulaire.prenom }}
+                                    {% if operation.compte.cotitulaire %} / {{ operation.compte.cotitulaire.nom }} {{ operation.compte.cotitulaire.prenom }}{% endif %}
+                                {% endif %}
+                                {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE") %}
+                                    {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
+                                    {% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
+                                    {% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
+                                {% endif %}<br />
+                                {% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
+                            </strong>
+                            <div class="text-muted">
+                                {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
+                                    {{ operation.description }}
+                                {% endif %}
+                            </div>
                         </td>
                         <td class="text-center">
-                            {% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
-                            {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
-                                {{ operation.description }}<br />
-                                <div class="text-muted">[<strong>{{ operation.categorie.categorie.nom}}</strong>] {{ operation.categorie.nom }}</div>
-                            {% endif %}
+                            <strong>{{ operation.categorie.nom}}</strong>
+                            <div class="text-muted">{{ operation.categorie.categorie.nom }}</div>
                         </td>
                         <td class="text-right text-danger">{% if operation.debit > 0 %}{{ operation.debit }} €{% endif %}</td>
                         <td class="text-right text-success">{% if operation.credit > 0 %}{{ operation.credit }} €{% endif %}</td>
