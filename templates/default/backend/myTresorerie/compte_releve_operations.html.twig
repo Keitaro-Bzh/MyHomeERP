@@ -1,6 +1,12 @@
+{% block header_css %}
+    <!-- Specific Page Vendor CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+{% endblock %}
+
 <div class="table-responsive">
     {% if operations|length > 0 %}
-        <table class="table table-bordered table-striped table-condensed mb-none">
+        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
             <thead>
                 <tr>
                     <th class="text-center col-md-1">Date</th>
@@ -23,11 +29,12 @@
                             {% if operation.modePaiementTrigramme == 'CHQ' %}<i class="fa fa-file-text-o"></i>{% endif %}
                             {% if operation.modePaiementTrigramme == 'PAY' %}<i class="fa fa-bitcoin"></i>{% endif %}
                             {% if operation.modePaiementTrigramme == 'DEP' %}<i class="fa fa-caret-square-o-right"></i>{% endif %}
-                            {% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i> Retrait espèces {% endif %}
+                            {% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i>{% endif %}
                             {% if operation.typeOperation == "VII" %}<i class="fa fa-exchange"></i>{% endif %}
                         </td>
                         <td>
                             <strong>
+                                {% if operation.typeOperation == "RET" %} Retrait espèces {% endif %}
                                 {% if operation.typeOperation == "VII" %}
                                     {{ operation.compte.titulaire.nom }} {{ operation.compte.titulaire.prenom }}
                                     {% if operation.compte.cotitulaire %} / {{ operation.compte.cotitulaire.nom }} {{ operation.compte.cotitulaire.prenom }}{% endif %}
@@ -36,18 +43,18 @@
                                     {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
                                     {% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
                                     {% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
-                                {% endif %}<br />
-                                {% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
-                            </strong>
+                                {% endif %}
+                            </strong><br />
                             <div class="text-muted">
+                                {% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
                                 {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
                                     {{ operation.description }}
                                 {% endif %}
                             </div>
                         </td>
                         <td class="text-center">
-                            <strong>{{ operation.categorie.nom}}</strong>
-                            <div class="text-muted">{{ operation.categorie.categorie.nom }}</div>
+                            <strong>{{ operation.categorie.categorie.nom|capitalize}}</strong>
+                            <div class="text-muted">{{ operation.categorie.nom }}</div>
                         </td>
                         <td class="text-right text-danger">{% if operation.debit > 0 %}{{ operation.debit }} €{% endif %}</td>
                         <td class="text-right text-success">{% if operation.credit > 0 %}{{ operation.credit }} €{% endif %}</td>
@@ -104,3 +111,4 @@
         </div>
     {% endif %}
 </div>
+

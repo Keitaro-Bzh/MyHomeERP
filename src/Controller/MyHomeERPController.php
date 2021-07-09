@@ -32,7 +32,7 @@ class MyHomeERPController extends AbstractController
             $banques = $banqueRepo->findActif();
             $comptes = $compteRepo->findActif();
 
-            return $this->render('default/backend/index.html.twig', [
+            return $this->render('default/backend/tableauBord.html.twig', [
                 'controller_name' => 'MyHomeERPController',
                 'listeEcheances' => $listeOperationEcheance,
                 'categories' => $statistiquesCategorie,

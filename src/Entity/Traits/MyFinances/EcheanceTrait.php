@@ -133,7 +133,7 @@ trait EcheanceTrait
                         $echeanceOperation->setMontantEcheance($this->getMontantTotal());
                     }
                     else {
-                        if ($this->getMontantFraction = true) {
+                        if ($this->getMontantFraction() == true) {
                             if ($numEcheance < $this->getNombreEcheances()) {
                                 $montantTotalEcheance = $montantTotalEcheance + round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP);
                                 $echeanceOperation->setMontantEcheance(round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP));
@@ -161,7 +161,7 @@ trait EcheanceTrait
                             $dateEcheanceOne = new DateTime($dateEcheanceOne->format('Y').'-'.($dateEcheanceOne->format('m')+1).'-28');
                         }
                         else {
-                            $dateEcheanceOne = new DateTime(($dateEcheanceOne->format('Y')+1).'-'.$dateEcheanceOne->format('m').'-28');
+                            $dateEcheanceOne = new DateTime(($dateEcheanceOne->format('Y')+1).'-01-28');
                         }
                         
                     }
