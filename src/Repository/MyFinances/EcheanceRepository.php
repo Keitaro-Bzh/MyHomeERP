@@ -19,6 +19,20 @@ class EcheanceRepository extends ServiceEntityRepository
         parent::__construct($registry, Echeance::class);
     }
 
+    public function findActif()
+    {
+        $contrats = $this->createQueryBuilder('c')
+            ->andWhere('c.date_fin >= :now')
+            ->orWhere('c.date_fin is null')
+            ->orWhere('c.est_solde = false')
+            ->setParameter('now',new \DateTime('now'))
+            ->orderBy('c.date_echeance_one', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return $contrats;
+    }
     // /**
     //  * @return Echeance[] Returns an array of Echeance objects
     //  */

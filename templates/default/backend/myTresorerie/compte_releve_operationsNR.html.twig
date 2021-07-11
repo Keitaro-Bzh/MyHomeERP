@@ -1,7 +1,12 @@
+{% block header_css %}
+    <!-- Specific Page Vendor CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+{% endblock %}
 
 <div class="table-responsive">
     {% if operations|length > 0 %}
-        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-echeances">
+        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-operationsNR">
             <thead>
                 <tr>
                     <th class="text-center col-md-1">Date</th>
@@ -77,6 +82,7 @@
                             <a class="modal-basic" href="#modalBasicOperation{{ operation.id }}"><i class="fa fa-trash-o"></i></a>
                         </td>
                     </tr>
+
 
                     {# Fenetre modèle pour valider la suppression d'une ficher operation #}
                     <div id="modalBasicOperation{{ operation.id }}" class="modal-block modal-block-primary mfp-hide">

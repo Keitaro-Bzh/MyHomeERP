@@ -17,6 +17,7 @@ trait EcheanceTrait
     {
         return $this->tabEcheanceOperations;
     }
+    
     public function setEcheanceFromContratOperation(ContratFacturation $contratFacturation): self
     {
         // On va peupleur notre entité avec les valeurs de notre contrat
@@ -55,34 +56,54 @@ trait EcheanceTrait
         on va également renseigner deux informations pour la génération des échéances-opérations et des opérations
         éventuelles. 
     */
-    private function calculNombreEcheanceOperation(): self 
+    public function calculNombreEcheanceOperation(): self 
     {  
-        if ($this->getDateFin()) {
-            $nombreEcheance = 1;
+        // On va faire une règle pour aller calculer le nombre d'échéance dans le cas d'un contrat
+        if ($this->getNombreEcheances() == 0) {
+            if ($this->getDateFin()) {
+                $nombreEcheance = 1;
 
-            $dateEcheance = clone($this->getDateEcheanceOne()); // Date référence au 01/01/2021 par exemple
-            $dateEcheanceDiff = clone($dateEcheance);
-            while ($dateEcheance <= $this->getDateFin()) {
-                $dateEcheance = $dateEcheance->add(new DateInterval("P" . $this->getFrequenceNombrePaiement() . $this->getFrequencePaiement()));
+                $dateEcheance = clone($this->getDateEcheanceOne()); // Date référence au 01/01/2021 par exemple
+                $dateEcheanceDiff = clone($dateEcheance);
+                while ($dateEcheance <= $this->getDateFin()) {
+                    $dateEcheance = $dateEcheance->add(new DateInterval("P" . $this->getFrequenceNombrePaiement() . $this->getFrequencePaiement()));
+
+                    // Particularité pour le calcul du nombre de mois pour les jours 29,30,31
+                    // qui calcule la date d'échéance sur le mois suivant.                
+                    if($dateEcheanceDiff->format("d") != $dateEcheance->format("d") &&  $this->getFrequencePaiement() == 'M') {
+                        $dateEcheance->sub(new DateInterval("P" . $dateEcheance->format("d") . "D"));
+                    }   
+                    if ($dateEcheance <= $this->getDateFin()) {
+                        $nombreEcheance++;
+                    }
+                }
+                $this->setNombreEcheances($nombreEcheance);
+            }
+            else {
+                $this->setNombreEcheances(0);
+            }
+        } else {
+            if ($this->getNombreEcheances() == 1) {
+                $this->setDateFin(clone($this->getDateEcheanceOne()));
+            }
+            else {
+                // On est dans le cas ou nous sommes dans un calcul d'échéance avec un paiement multiple
+                $dateEcheance = clone($this->getDateEcheanceOne()); // Date référence au 01/01/2021 par exemple
+                $dateEcheanceDiff = clone($dateEcheance);
+                $dateEcheance = $dateEcheance->add(new DateInterval("P" . ($this->getNombreEcheances() - 1) . $this->getFrequencePaiement()));
 
                 // Particularité pour le calcul du nombre de mois pour les jours 29,30,31
                 // qui calcule la date d'échéance sur le mois suivant.                
-                if($dateEcheanceDiff->format("d") != $dateEcheance->format("d")) {
+                if($dateEcheanceDiff->format("d") != $dateEcheance->format("d") &&  $this->getFrequencePaiement() == 'M') {
                     $dateEcheance->sub(new DateInterval("P" . $dateEcheance->format("d") . "D"));
-                }   
-                if ($dateEcheance <= $this->getDateFin()) {
-                    $nombreEcheance++;
                 }
+                $this->setDateFin($dateEcheance);
             }
-            $this->setNombreEcheances($nombreEcheance);
-        }
-        else {
-            $this->setNombreEcheances(0);
         }
         return $this;
     }
 
-    private function calculTableEcheanceOperation(): self 
+    public function calculTableEcheanceOperation(): self 
     {
         $numEcheance = 1;
         $montantTotalEcheance = 0;
@@ -103,7 +124,9 @@ trait EcheanceTrait
         $dateEcheanceDiff = clone($this->getDateEcheanceOne());  
         $dateJourEcheanceOne = $dateEcheanceOne->format('d');
         $dateFinMoisCours = new DateTime(date("Y-m-t"));
+
         if (($this->getNombreEcheances() > 0 ) || ($this->getNombreEcheances() == 0 && $this->getDateEcheanceOne() <= $dateFinMoisCours)) {
+
             // On va gérer une particularité sur la date dans le cas ou on ne demande pas le recalcul pour une echéance permanente
             if ($this->getNombreEcheances() == 0 && ($this->getRecalculOperationAnterieur() == false || $this->getRecalculOperationAnterieur() == 0)) {
                 if ($dateEcheanceOne <= new DateTime(date("Y-m-01"))) {
@@ -133,7 +156,7 @@ trait EcheanceTrait
                         $echeanceOperation->setMontantEcheance($this->getMontantTotal());
                     }
                     else {
-                        if ($this->getMontantFraction() == true) {
+                        if ($this->getNombreEcheances() > 0 && $this->getMontantFraction() == true) {
                             if ($numEcheance < $this->getNombreEcheances()) {
                                 $montantTotalEcheance = $montantTotalEcheance + round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP);
                                 $echeanceOperation->setMontantEcheance(round($this->getMontantTotal()/$this->getNombreEcheances(),2,PHP_ROUND_HALF_UP));
@@ -152,8 +175,7 @@ trait EcheanceTrait
 
                     // On passe à l'échéance suivante
                     $numEcheance++;
-                    
-                    
+                 
                     // Particularité pour le calcul du nombre de mois pour les jours 29,30,31
                     // qui calcule la date d'échéance sur le mois suivant.  
                     if ($dateJourEcheanceOne > 28) {

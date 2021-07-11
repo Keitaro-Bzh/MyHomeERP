@@ -41,7 +41,7 @@
                                     {% if banque.id == compte.banque.id %}
                                     <div class="p-1">
                                             <div class="col-md-12">
-                                                {{ compte.libelle }} (<em>{{ compte.titulaire.prenom}} {{ compte.titulaire.nom|slice(0,1) }}.{%if compte.cotitulaire %} / {{ compte.cotitulaire.prenom}} {{ compte.cotitulaire.nom|slice(0,1)}}. {% endif %})</em>
+                                                <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte.id }) }}"> {{ compte.libelle }}</a> (<em>{{ compte.titulaire.prenom}} {{ compte.titulaire.nom|slice(0,1) }}.{%if compte.cotitulaire %} / {{ compte.cotitulaire.prenom}} {{ compte.cotitulaire.nom|slice(0,1)}}. {% endif %})</em>
                                             </div>
                                             <div class="col-md-12 text-right">
                                                 <span class="text-{% if compte.SoldeCours < 0 %}danger{% else %}success{% endif %}">{{ compte.SoldeCours }} €</span> (<span class="text-{% if compte.SoldeReel < 0 %}danger{% else %}success{% endif %}">{{ compte.SoldeReel }} €</span>)

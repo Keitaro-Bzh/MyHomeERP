@@ -39,7 +39,7 @@ class MyTresorerieEcheanceController extends AbstractController
     {
         return $this->render('/default/backend/myTresorerie//echeances.html.twig', [
             'controller_name' => 'MyTresorerieEcheanceController',
-            'echeances' => $echeanceRepo->findAll()
+            'echeances' => $echeanceRepo->findActif()
         ]);
     }
 
@@ -128,7 +128,6 @@ class MyTresorerieEcheanceController extends AbstractController
                     'Paiement 10x' => '10',
                     'Permament' => '0',
                 ),
-                'data' => $echeance->getTypeTiers() ? $echeance->getTypeTiers() : 'L'
             ))
             ->add('sousCategorieID', SousCategorieChoiceType::class, [
                 'attr' => ['class' => 'form-control'],
@@ -190,105 +189,34 @@ class MyTresorerieEcheanceController extends AbstractController
                         $echeance->setModePaiementTrigramme($echeance->getModePaiement()->getModePaiement());
                         break;
                 }
-
+                // on force la fréquence à 1 paiement par mois
+                $echeance->setFrequenceNombrePaiement(1);
+                $echeance->setFrequencePaiement('M');
                 $em->persist($echeance);
                 $em->flush();
 
-                $nbEcheances = $echeance->getNombreEcheances();
-                
-                // Dans le cas ou l'on a plusieurs paiements, on va créer calculer le montant de 
-                // l'échéance en fonction du nombre de paiement
-                if ($nbEcheances > 0) {
-                    $montantEcheance = round($echeance->getMontantTotal() / $nbEcheances,2,PHP_ROUND_HALF_UP);
-                }
-                else {
-                    $montantEcheance = $echeance->getMontantTotal();
-                    $dateFin = $echeance->getDateFin() ? $echeance->getDateFin() : new DateTime(date("Y-m-t"));
-                    // On va vérifier si il faut recalculer les échéances passées
-                    if (isset($requete->request->get('form')['recalcul_operation_anterieur']) && $requete->request->get('form')['recalcul_operation_anterieur'] == "1") {
-                        $interval = $echeance->getDateEcheanceOne()->diff($dateFin);
-                        $nbMois= $interval->format('%m');
-                        $nbAnnee = $interval->format('%y');
-                        if ($dateFin < $echeance->getDateEcheanceOne()) {
-                            $nbEcheances = 0;
-                        }
-                        else {
-                            // On ajoute 1 pour avoir le mois en cours
-                            $nbEcheances = 12 * $nbAnnee + $nbMois +1;
-                        }
-                    }
-                    // On ne recalcule pas les dates antérieurs, donc on va n'insérer qu'une échéance
-                    // correspondant au mois en cours
-                    elseif ($echeance->getDateEcheanceOne() <= new DateTime(date("Y-m-t"))) {
-                        $nbEcheances = 1;
-                    }
-                }
-
-                $dateEcheance = $echeance->getDateEcheanceOne();
-                for ($i =1; $i <= $nbEcheances; $i++ ) {
-                    $echeanceOperation = new EcheanceOperation;
-                    $echeanceOperation->setMontantEcheance($montantEcheance);
-
-                    // On va gérer une particularité sur la date dans le cas ou on ne demande pas le recalcul pour une echéance permanente
-                    if ($echeance->getNombreEcheances() == 0 && (!isset($requete->request->get('form')['recalcul_operation_anterieur'])) && $dateEcheance <= new DateTime(date("Y-m-t"))) {
-                        $dateJour = new DateTime();
-                        if ($dateEcheance->format('d') >= 28) {
-                            $dateMoisCours = $dateEcheance->format('Y') . '-' . $dateJour->format('m') . '-28';
-                        }
-                        else {
-                            $dateMoisCours = $dateEcheance->format('Y') . '-' . $dateJour->format('m') . '-' .$dateEcheance->format('d');
-                        }
-                        if($echeance->getDateFin() && $echeance->getDateFin() < new dateTime($dateMoisCours)) {
-                            // La date de fin des échéances est antérieur à la date calculée
-                            // il faut la remodeler
-                            if ($echeance->getDateFin()->format('d') >= $dateEcheance->format('d')) {
-                                $dateMoisCours = $dateEcheance->format('Y') . '-' . $echeance->getDateFin()->format('m') . '-' . $dateEcheance->format('d');
-                            } 
-                            else {
-                                $dateMoisCours = $dateEcheance->format('Y') . '-' . ($echeance->getDateFin()->format('m') - 1) . '-' . $dateEcheance->format('d');
-                            }
-                        }
-                        $echeanceOperation->setDateEcheance(new dateTime($dateMoisCours));
-                    }
-                    else {
-                        $echeanceOperation->setDateEcheance($dateEcheance);
-                    }
-                    
-                    if ($i == ($nbEcheances) && $echeance->getNombreEcheances() > 1) {
-                        $echeanceOperation->setMontantEcheance($echeance->getMontantTotal() - (($montantEcheance) * ($i - 1)));
-                    }
-                    $echeanceOperation->setEcheance($echeance);
-                
-                    $em->persist($echeanceOperation);
-                    $em->flush();
-
-                    // On va créer les opérations jusqu'à la fin du mois
-                    // ou celle du mois si c'est elle
-                    $date = New DateTime('now');
-                    $verifDateEcheance = isset($dateMoisCours) ? $dateMoisCours : $echeanceOperation->getDateEcheance();
-                    if ($verifDateEcheance < $date->modify('last day of this month')) {
-                        $operation = new Operation;
-                        $operation->setCompte($echeance->getCompte());
-                        $operation->setDescription($echeance->getDescription());
-                        $operation->setTypeOperation($echeance->getTypeOperation());
-                        $operation->setTypeTiers($echeance->getTypeTiers());
-                        $operation->setTiersLibelle($echeance->getTiersLibelle());
-                        $operation->setPersonne($echeance->getTiersPersonne());
-                        $operation->setSociete($echeance->getTiersSociete());
-                        $operation->setCategorie($echeance->getSousCategorie());
-                        $operation->setEcheanceOperation($echeanceOperation);
-                        $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
-                        $operation->setModePaiement($echeance->getModePaiement());
-                        $operation->setDate($verifDateEcheance);
-                        $operation->setDebit($echeanceOperation->getMontantEcheance());
-                        $operation->setEstPointe(0);
-
-                        $em->persist($operation);
+                $echeance->calculNombreEcheanceOperation();
+                $echeance->calculTableEcheanceOperation();
+ 
+                // On va générer les opérations d'échéance associées 
+                if (count($echeance->getTabEcheanceOperations()) > 0) {
+                    for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
+                        $echeanceOperation = new EcheanceOperation;
+                        $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
+                        $echeanceOperation->setEcheance($echeance);
+                        $em->persist($echeanceOperation);
                         $em->flush();
+
+                            // On va créer les opérations jusqu'à la fin du mois
+                            // ou celle du mois si c'est elle
+                            if ($echeanceOperation->getDateEcheance() < New DateTime('last day of this month')) {
+                                $operation = new Operation;
+                                $operation->setDebitFromEcheanceOperation($echeanceOperation);
+
+                                $em->persist($operation);
+                                $em->flush();
+                            }
                     }
-                    
-                    // On va analyser la date d'échéance suivante
-                    $dateEcheance = date_modify($dateEcheance, '+1 month');
                 }
             }
             else {
@@ -426,44 +354,39 @@ class MyTresorerieEcheanceController extends AbstractController
                         $echeance->setTiersLibelle(null);
                         break;
                 }
+
+                // on définie les valeurs par défaut d'un crédit
                 $echeance->setModePaiementTrigramme('VIR');
-                $echeance->setNombreEcheances(0);
+                $echeance->setTypeOperation('CRE');
+                $echeance->setFrequenceNombrePaiement(1);
+                $echeance->setFrequencePaiement('M');
+
                 $em->persist($echeance);
                 $em->flush();
 
-                //On va créer l'echeancesOperations
-                $dateEcheance = $echeance->getDateEcheanceOne();
-                $echeanceOperation = new EcheanceOperation;
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
-                $echeanceOperation->setDateEcheance($echeance->getDateEcheanceOne());
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
-                $echeanceOperation->setEcheance($echeance);
+                $echeance->calculNombreEcheanceOperation();
+                $echeance->calculTableEcheanceOperation();
 
-                $em->persist($echeanceOperation);
-                $em->flush();
+                // On va générer les opérations d'échéance associées 
+                if (count($echeance->getTabEcheanceOperations()) > 0) {
+                    for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
+                        $echeanceOperation = new EcheanceOperation;
+                        $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
+                        $echeanceOperation->setEcheance($echeance);
+                        $em->persist($echeanceOperation);
+                        $em->flush();
 
-                 // On va créer les opérations antérieurs à la fin du mois
-                 $date = New DateTime('now');
-                 if ($echeance->getDateEcheanceOne() < $date->modify('last day of this month')) {
-                     $operation = new Operation;
-                     $operation->setCompte($echeance->getCompte());
-                     $operation->setDescription($echeance->getDescription());
-                     $operation->setTypeOperation($echeance->getTypeOperation());
-                     $operation->setTypeTiers($echeance->getTypeTiers());
-                     $operation->setTiersLibelle($echeance->getTiersLibelle());
-                     $operation->setPersonne($echeance->getTiersPersonne());
-                     $operation->setSociete($echeance->getTiersSociete());
-                     $operation->setCategorie($echeance->getSousCategorie());
-                     $operation->setEcheanceOperation($echeanceOperation);
-                     $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
-                     $operation->setModePaiement($echeance->getModePaiement());
-                     $operation->setDate($echeanceOperation->getDateEcheance());
-                     $operation->setCredit($echeanceOperation->getMontantEcheance());
-                     $operation->setEstPointe(0);
+                            // On va créer les opérations jusqu'à la fin du mois
+                            // ou celle du mois si c'est elle
+                            if ($echeanceOperation->getDateEcheance() < New DateTime('last day of this month')) {
+                                $operation = new Operation;
+                                $operation->setCreditFromEcheanceOperation($echeanceOperation);
 
-                     $em->persist($operation);
-                     $em->flush();
-                 }
+                                $em->persist($operation);
+                                $em->flush();
+                            }
+                    }
+                }
             }
             else {
                 $this->addFlash("errorMSG", "Merci de saisir un montant positif");
@@ -540,6 +463,7 @@ class MyTresorerieEcheanceController extends AbstractController
                 'widget' => 'single_text',
                 'format' => 'dd/MM/yyyy',
                 'html5' => false,
+                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'data-plugin-masked' => 'data-plugin-masked-input',
@@ -558,69 +482,57 @@ class MyTresorerieEcheanceController extends AbstractController
                 $echeance->setCompte($compteRepo->find($requete->request->get('form')['compteID']));
                 $echeance->setCompteDestinataireVirement($compteRepo->find($requete->request->get('form')['compteDestinataireID']));
 
+                $echeance->setFrequenceNombrePaiement(1);
+                $echeance->setFrequencePaiement('M');
+                $echeance->setTypeOperation('VII');
                 $echeance->setModePaiementTrigramme('VIR');
-                $echeance->setNombreEcheances(0);
+
                 $em->persist($echeance);
                 $em->flush();
 
-                //On va créer les echeancesOperations
-                // Etant dans le cadre d'un virement, il faut procéder
-                // -----------------------------------------
-                // A la création d'une operation de credit
-                $timestamp = time();
-                $echeanceOperation = new EcheanceOperation;
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
-                $echeanceOperation->setDateEcheance($echeance->getDateEcheanceOne());
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
+                $echeance->calculNombreEcheanceOperation();
+                $echeance->calculTableEcheanceOperation();
 
-                $em->persist($echeanceOperation);
-                $em->flush();
+                // On va générer les opérations d'échéance associées 
+                if (count($echeance->getTabEcheanceOperations()) > 0) {
+                    for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
+                        $timestamp = time() + $i;
+                        $echeanceOperation = new EcheanceOperation;
+                        $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
+                        $echeanceOperation->setEcheance($echeance);
 
-                // On va créer les opérations antérieurs à la fin du mois
-                $date = New DateTime('now');
-                if ($echeance->getDateEcheanceOne() < $date->modify('last day of this month')) {
-                    $operation = new Operation;
-                    $operation->setCompte($echeance->getCompte());
-                    $operation->setDescription($echeance->getDescription());
-                    $operation->setTypeOperation('VII');
-                    $operation->setVirementID($timestamp);
-                    $operation->setEcheanceOperation($echeanceOperation);
-                    $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
-                    $operation->setModePaiement($echeance->getModePaiement());
-                    $operation->setDate($echeanceOperation->getDateEcheance());
-                    $operation->setDebit($echeanceOperation->getMontantEcheance());
-                    $operation->setEstPointe(0);
+                        $em->persist($echeanceOperation);
+                        $em->flush();
 
-                    $em->persist($operation);
-                    $em->flush();
-                }
+                        if ($echeanceOperation->getDateEcheance() < New DateTime('last day of this month')) {
+                            $operationDebit = new Operation;
+                            $operationDebit->setDebitFromEcheanceOperation($echeanceOperation);
+                            $operationDebit->setTypeOperation('VII');
+                            $operationDebit->setVirementID($timestamp);
+                            $operationDebit->setCompteVirementInterne($echeance->getCompteDestinataireVirement());
 
-                // -----------------------------------------
-                // A la création d'une operation de debit
-                $echeanceOperation = new EcheanceOperation;
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
-                $echeanceOperation->setDateEcheance($echeance->getDateEcheanceOne());
-                $echeanceOperation->setMontantEcheance($echeance->getMontantTotal());
+                            $em->persist($operationDebit);
+                            $em->flush();
+                        }
 
-                $em->persist($echeanceOperation);
-                $em->flush();
+                        $echeanceOperationCredit = new EcheanceOperation;
+                        $echeanceOperationCredit = clone($echeance->getTabEcheanceOperations()[$i]);
+                        $echeanceOperationCredit->setEcheance($echeance);
 
-                // On va créer les opérations antérieurs à la fin du mois
-                $date = New DateTime('now');
-                if ($echeance->getDateEcheanceOne() < $date->modify('last day of this month')) {
-                    $operation = new Operation;
-                    $operation->setCompte($echeance->getCompteDestinataireVirement());
-                    $operation->setTypeOperation('VII');
-                    $operation->setEcheanceOperation($echeanceOperation);
-                    $operation->setVirementID($timestamp);
-                    $operation->setModePaiementTrigramme($echeance->getModePaiementTrigramme());
-                    $operation->setModePaiement($echeance->getModePaiement());
-                    $operation->setDate($echeanceOperation->getDateEcheance());
-                    $operation->setCredit($echeanceOperation->getMontantEcheance());
-                    $operation->setEstPointe(0);
+                        $em->persist($echeanceOperationCredit);
+                        $em->flush();
+                        if ($echeanceOperation->getDateEcheance() < New DateTime('last day of this month')) {
+                            $operationCredit = new Operation;
+                            $operationCredit->setCreditFromEcheanceOperation($echeanceOperationCredit);
+                            $operationCredit->setCompte($echeance->getCompteDestinataireVirement());
+                            $operationCredit->setCompteVirementInterne($echeance->getCompte());
+                            $operationCredit->setTypeOperation('VII');
+                            $operationCredit->setVirementID($timestamp);
 
-                    $em->persist($operation);
-                    $em->flush();
+                            $em->persist($operationCredit);
+                            $em->flush();
+                        }
+                    }
                 }
             }
             else {

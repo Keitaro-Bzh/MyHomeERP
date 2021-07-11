@@ -6,7 +6,7 @@
 
 <div class="table-responsive">
     {% if operations|length > 0 %}
-        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-operations">
             <thead>
                 <tr>
                     <th class="text-center col-md-1">Date</th>
@@ -21,7 +21,7 @@
                 {% for operation in operations %}
                     <tr>
                         <td class="text-center">
-                            {{ operation.date|date('d/m/y') }}<br />
+                            {{ operation.date|date('Y/m/d') }}<br />
                             {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "DEB" )%}<i class="fa fa-chevron-circle-left"></i>{% endif %}
                             {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "CRE" )%}<i class="fa fa-chevron-circle-right"></i>{% endif %}
                             {% if operation.modePaiementTrigramme == 'PRE' %}<i class="fa fa-caret-square-o-left"></i>{% endif %}
@@ -36,8 +36,8 @@
                             <strong>
                                 {% if operation.typeOperation == "RET" %} Retrait espèces {% endif %}
                                 {% if operation.typeOperation == "VII" %}
-                                    {{ operation.compte.titulaire.nom }} {{ operation.compte.titulaire.prenom }}
-                                    {% if operation.compte.cotitulaire %} / {{ operation.compte.cotitulaire.nom }} {{ operation.compte.cotitulaire.prenom }}{% endif %}
+                                    {{ operation.compteVirementInterne.titulaire.nom }} {{ operation.compteVirementInterne.titulaire.prenom }}
+                                    {% if operation.compteVirementInterne.cotitulaire %} / {{ operation.compteVirementInterne.cotitulaire.nom }} {{ operation.compteVirementInterne.cotitulaire.prenom }}{% endif %}
                                 {% endif %}
                                 {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE") %}
                                     {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
@@ -46,15 +46,17 @@
                                 {% endif %}
                             </strong><br />
                             <div class="text-muted">
-                                {% if operation.typeOperation == "VII"%}{{ operation.compte.libelle }} [{{ operation.compte.banque.societe.nom }}] {% endif %}
+                                {% if operation.typeOperation == "VII"%}{{ operation.compteVirementInterne.libelle }} [{{ operation.compteVirementInterne.banque.societe.nom }}] {% endif %}
                                 {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
                                     {{ operation.description }}
                                 {% endif %}
                             </div>
                         </td>
                         <td class="text-center">
-                            <strong>{{ operation.categorie.categorie.nom|capitalize}}</strong>
+                            {% if operation.categorie != null %}
+                            <strong>{{ operation.categorie.categorie.nom|capitalize }}</strong>
                             <div class="text-muted">{{ operation.categorie.nom }}</div>
+                            {% endif %}
                         </td>
                         <td class="text-right text-danger">{% if operation.debit > 0 %}{{ operation.debit }} €{% endif %}</td>
                         <td class="text-right text-success">{% if operation.credit > 0 %}{{ operation.credit }} €{% endif %}</td>

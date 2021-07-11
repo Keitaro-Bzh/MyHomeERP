@@ -34,7 +34,7 @@ class MyContratsController extends AbstractController
      */
     public function app_myContrats(ContratRepository $contratRepo): Response
     {
-        $contrats = $contratRepo->findAll();
+        $contrats = $contratRepo->findActif();
         return $this->render('default/backend/myContrats/_home.html.twig', [
             'controller_name' => 'MyContratsController',
             'contrats' => $contrats

@@ -38,7 +38,7 @@ class MyContactsController extends AbstractController
 
     /**
      * @Route("/personnes/ajout", name="app_personnes_ajout")
-     * @Route("/personnes/edit/{id<[0-9+]>}", name="app_personnes_edit")
+     * @Route("/personnes/edit/{id}", name="app_personnes_edit")
      */
     public function personneForm(?int $id,PersonneRepository $personneRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -117,7 +117,7 @@ class MyContactsController extends AbstractController
 
     /**
      * @Route("/societes/ajout", name="app_societes_ajout")
-     * @Route("/societes/{id<[0-9+]>}/edit", name="app_societes_edit", methods={"GET", "POST"})
+     * @Route("/societes/{id}/edit", name="app_societes_edit", methods={"GET", "POST"})
      */
     public function societeForm(?int $id,SocieteRepository $societeRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -188,7 +188,7 @@ class MyContactsController extends AbstractController
     }
 
     /**
-     * @Route("/personnes/del/{id<[0-9+]>}", name="app_personnes_del", methods ="DELETE")
+     * @Route("/personnes/del/{id}", name="app_personnes_del", methods ="DELETE")
      */
     public function personneDelete(Personne $personne, Request $requete, EntityManagerInterface $em): Response
     {
@@ -210,7 +210,7 @@ class MyContactsController extends AbstractController
     }
 
     /**
-     * @Route("/societes/{id<[0-9+]>}/del", name="app_societes_del", methods ="DELETE")
+     * @Route("/societes/del/{id}", name="app_societes_del", methods ="DELETE")
      */
     public function societeDelete(Societe $societe, Request $requete, EntityManagerInterface $em): Response
     {

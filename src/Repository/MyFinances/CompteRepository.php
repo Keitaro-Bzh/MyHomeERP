@@ -69,7 +69,9 @@ class CompteRepository extends ServiceEntityRepository
 
         if (count($statCompte) > 0) {
             $compte->setSoldeCours($statCompte[0]['solde_initial'] + $compte->getSoldeCours());
+            $compte->setSoldeCours(round($compte->getSoldeCours(),2));
             $compte->setSoldeReel($compte->getSoldeCours() + $compte->getSoldeReel());
+            $compte->setSoldeReel(round($compte->getSoldeReel(),2));
         }
 
         if (!$compte->getSoldeCours()) $compte->setSoldeCours('0.00');

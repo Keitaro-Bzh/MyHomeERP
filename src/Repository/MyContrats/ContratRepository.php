@@ -19,6 +19,21 @@ class ContratRepository extends ServiceEntityRepository
         parent::__construct($registry, Contrat::class);
     }
 
+    public function findActif()
+    {
+        $contrats = $this->createQueryBuilder('c')
+            ->andWhere('c.date_fin_contrat <= :now')
+            ->orWhere('c.date_fin_contrat is null')
+            ->andWhere('c.est_archive = false')
+            ->setParameter('now',new \DateTime('now'))
+            ->orderBy('c.date_signature', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return $contrats;
+    }
+
     // /**
     //  * @return Contrat[] Returns an array of Contrat objects
     //  */

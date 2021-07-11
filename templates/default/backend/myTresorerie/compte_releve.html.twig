@@ -2,8 +2,6 @@
 
 {% block titre_page %}TRESORERIE{% endblock %}
 
-{% block css_header %}{% endblock %}
-
 {% block contenu_site %}
     <section class="panel">
         <header class="panel-heading">
@@ -39,10 +37,10 @@
                             {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsRapprochees} %}
                         </div>
                         <div id="operations" class="tab-pane">
-                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsNonRapprochees} %}
+                            {% include 'default/backend/myTresorerie/compte_releve_operationsNR.html.twig' with {'operations': operationsNonRapprochees} %}
                         </div>
                         <div id="echeances" class="tab-pane">
-                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsEcheancesFuturs} %}
+                            {% include 'default/backend/myTresorerie/compte_releve_echeances.html.twig' with {'operations': operationsEcheancesFuturs} %}
                         </div>
                     </div>
                 </div>
@@ -64,11 +62,8 @@
 {% endblock %}
 
 {% block page_script %}
-    <!-- Specific Page Vendor -->
     <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
-    <script src="{{ asset('assets/vendor/select2/select2.js') }}"></script>
     <script src="{{ asset('assets/vendor/jquery-datatables/media/js/jquery.dataTables.js') }}"></script>
-    <script src="{{ asset('assets/vendor/jquery-datatables/extras/TableTools/js/dataTables.tableTools.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/jquery-datatables-bs3/assets/js/datatables.js') }}"></script>
-    <script src="{{ asset('assets/javascripts/tables/examples.datatables.default.js') }}"></script>
+    <script src="{{ asset('assets/javascripts/tables/datatables.releve-operations.js') }}"></script>
 {% endblock %}

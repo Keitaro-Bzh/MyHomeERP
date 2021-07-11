@@ -7,6 +7,7 @@ use App\Entity\MyContacts\Societe;
 use App\Repository\MyFinances\OperationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\suiviLog;
+use App\Entity\Traits\MyFinances\OperationTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -17,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Operation
 {
     use suiviLog;
+    use OperationTrait;
 
     /**
      * @ORM\Id
@@ -110,6 +112,11 @@ class Operation
      * @ORM\OneToOne(targetEntity=EcheanceOperation::class, cascade={"persist", "remove"})
      */
     private $echeance_operation;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Compte::class, inversedBy="compte_virement_interne")
+     */
+    private $compte_virement_interne;
 
     public function getId(): ?int
     {
@@ -316,6 +323,18 @@ class Operation
     public function setEcheanceOperation(?EcheanceOperation $echeance_operation): self
     {
         $this->echeance_operation = $echeance_operation;
+
+        return $this;
+    }
+
+    public function getCompteVirementInterne(): ?Compte
+    {
+        return $this->compte_virement_interne;
+    }
+
+    public function setCompteVirementInterne(?Compte $compte_virement_interne): self
+    {
+        $this->compte_virement_interne = $compte_virement_interne;
 
         return $this;
     }

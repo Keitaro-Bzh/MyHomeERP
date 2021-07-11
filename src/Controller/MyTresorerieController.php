@@ -433,6 +433,7 @@ class MyTresorerieController extends AbstractController
                 $operationDebit->setVirementID($idVirement);
                 $operationDebit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
                 $operationDebit->setCompte($compteRepo->find($requete->request->get('form')['compteDebitID']));
+                $operationDebit->setCompteVirementInterne($compteRepo->find($requete->request->get('form')['compteCreditID']));
 
                 $em->persist($operationDebit);
                 $em->flush();
@@ -445,6 +446,7 @@ class MyTresorerieController extends AbstractController
                 $operationCredit->setVirementID($idVirement);
                 $operationCredit->setEstPointe(isset($requete->request->get('form')['est_pointe']) ? $requete->request->get('form')['est_pointe'] : 0);
                 $operationCredit->setCompte($compteRepo->find($requete->request->get('form')['compteCreditID']));
+                $operationCredit->setCompteVirementInterne($compteRepo->find($requete->request->get('form')['compteDebitID']));
 
                 $em->persist($operationCredit);
                 $em->flush();

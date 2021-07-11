@@ -108,6 +108,11 @@ class Compte
     private $soldeCours;
     private $soldeReel;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Operation::class, mappedBy="compte_virement_interne")
+     */
+    private $compte_virement_interne;
+
     public function __construct()
     {
         $this->modePaiements = new ArrayCollection();
@@ -116,6 +121,7 @@ class Compte
         $this->echeances = new ArrayCollection();
         $this->echeances_virement = new ArrayCollection();
         $this->contratFacturations = new ArrayCollection();
+        $this->compte_virement_interne = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -419,6 +425,36 @@ class Compte
     public function setSoldeReel(float $soldeReel): self
     {
         $this->soldeReel = $soldeReel;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Operation[]
+     */
+    public function getCompteVirementInterne(): Collection
+    {
+        return $this->compte_virement_interne;
+    }
+
+    public function addCompteVirementInterne(Operation $compteVirementInterne): self
+    {
+        if (!$this->compte_virement_interne->contains($compteVirementInterne)) {
+            $this->compte_virement_interne[] = $compteVirementInterne;
+            $compteVirementInterne->setCompteVirementInterne($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompteVirementInterne(Operation $compteVirementInterne): self
+    {
+        if ($this->compte_virement_interne->removeElement($compteVirementInterne)) {
+            // set the owning side to null (unless already changed)
+            if ($compteVirementInterne->getCompteVirementInterne() === $this) {
+                $compteVirementInterne->setCompteVirementInterne(null);
+            }
+        }
 
         return $this;
     }

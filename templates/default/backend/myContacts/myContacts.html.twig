@@ -33,7 +33,7 @@
                     <div id="personnes" class="tab-pane active">
                         <p>
                             {% if tablePersonnes|length > 0 %}
-                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-contacts">
                                     <thead>
                                         <tr>
                                             <th>Nom</th>
@@ -48,7 +48,7 @@
                                             <tr>
                                                 <td>{{ personne.nom|e }}</td>
                                                 <td>{{ personne.prenom|e }}</td>
-                                                <td>{{ personne.dateNaissance|date('d-m-Y') }}</td>
+                                                <td>{% if personne.dateNaissance != null %}{{ personne.dateNaissance|date('Y-m-d') }}{% endif %}</td>
                                                 <td><a href="mailto:{{ personne.email|e }}">{{ personne.email|e }}</a></td>
                                                 <td class="actions text-center col-md-1">
                                                     <a href="{{ path('app_personnes_edit', { 'id' : personne.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
@@ -95,7 +95,7 @@
                     <div id="societes" class="tab-pane">
                         <p>
                             {% if tableSocietes|length > 0 %}
-                                <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-societes">
                                     <thead>
                                         <tr>
                                             <th>Nom</th>
@@ -159,10 +159,11 @@
                 </div>
             </div>
         </div>
-    </div>
     </section>
 {% endblock %}
 
 {% block footer_script %}
-    <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables/media/js/jquery.dataTables.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables-bs3/assets/js/datatables.js') }}"></script>
+    <script src="{{ asset('assets/javascripts/tables/datatables.contacts.js') }}"></script>
 {% endblock %}
