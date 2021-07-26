@@ -6,6 +6,8 @@ use App\Entity\MyContrats\ContratFacturation;
 use App\Entity\MyFinances\EcheanceOperation;
 use App\Entity\MyFinances\Echeance;
 use App\Entity\MyFinances\Operation;
+use App\Entity\MyFinances\PositionOrdre;
+use App\Entity\MyFinances\SousCategorie;
 use DateInterval;
 use DateTime;
 
@@ -45,4 +47,24 @@ trait OperationTrait
         return $this;
     }
 
+    public function setOperationFromPositionOrdre (PositionOrdre $PositionOrdre, SousCategorie $sousCategorie): self
+    {
+        $this->setCompte($PositionOrdre->getPosition()->getCompte());
+        $this->setDate($PositionOrdre->getDate());
+        $this->setDescription($PositionOrdre->getNombreTitres() . ' actions à ' . $PositionOrdre->getValeurTitre() . ' €');
+        $this->setTypeTiers('S');
+        $this->setSociete($PositionOrdre->getPosition()->getSociete());
+        if ($PositionOrdre->getTypeMouvement() == 'D') {
+            $this->setTypeOperation('DEB');
+            $this->setDebit(($PositionOrdre->getValeurTitre() * $PositionOrdre->getNombreTitres()) + $PositionOrdre->getFrais() + $PositionOrdre->getTaxe());
+        }
+        else {
+            $this->setTypeOperation('CRE');$this->setTypeOperation('DEB');
+            $this->setCredit(($PositionOrdre->getValeurTitre() * $PositionOrdre->getNombreTitres()) + $PositionOrdre->getFrais() + $PositionOrdre->getTaxe());
+        }
+        $this->setCategorie($sousCategorie);
+        $this->setModePaiementTrigramme('VIR');
+        $this->setEstPointe(1);
+        return $this;
+    }
 }

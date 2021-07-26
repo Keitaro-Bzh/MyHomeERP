@@ -1,0 +1,57 @@
+{% block header_css %}
+    <!-- Specific Page Vendor CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+{% endblock %}
+
+<div class="table-responsive">
+    {% if positions|length > 0 %}
+        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-positions">
+            <thead>
+                <tr>
+                    <th class="text-center col-md-4">Titre</th>
+                    <th class="text-center col-md-1">Nombre</th>
+                    <th class="text-center col-md-1">PRU</th>
+                    <th class="text-center col-md-2">Montant achat</th>
+                    <th class="text-center col-md-2">Montant en cours</th>
+                    <th class="text-center col-md-1">+/- Value</th>
+                    <th class="text-center col-md-1">Ordre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for position in positions %}
+                    <tr>
+                        <td class="text-center">
+                            [{% if position.position == 'C'%}Comptant{% else %}SRD{% endif %}]
+                            <strong>{{ position.societe.nom }}</strong> 
+                        </td>
+                        <td class="text-center">
+                            {{ position.nombreActions }}
+                        </td>
+                        <td class="text-center">
+                            {{ position.pru }} €
+                        </td>
+                        <td class="text-right">
+                            {{ position.MontantAchat }} €
+                        </td>
+                        <td class="text-center">
+                          
+                        </td>
+                        <td class="text-center">
+                          
+                        </td>
+                        <td class="text-center">
+                            <strong><span class='text-danger'>A</span> <span class='text-success'>V</span></strong>
+                        </td>
+                    </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-success">
+            Aucune opération n'a été enregistrée pour le moment.
+        </div>
+    {% endif %}
+</div>
+

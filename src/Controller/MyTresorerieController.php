@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\MyFinances\Operation;
+use App\Entity\MyFinances\Position;
+use App\Entity\MyFinances\PositionOrdre;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -31,6 +33,8 @@ use App\Repository\MyFinances\ModePaiementRepository;
 use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\SousCategorieRepository;
 use App\Repository\MyFinances\CompteRepository;
+use App\Repository\MyFinances\PositionOrdreRepository;
+use App\Repository\MyFinances\PositionRepository;
 use App\Repository\MyFinances\TypeCompteRepository;
 use DateTime;
 
@@ -54,25 +58,37 @@ class MyTresorerieController extends AbstractController
     /**
      * @Route("/tresorerie/comptes/{id}", name="app_myTresorerie_compte_releve")
      */
-    public function mytresorerie_compte(int $id,OperationRepository $operationRepo, CompteRepository $compteRepo): Response
+    public function mytresorerie_compte(int $id,OperationRepository $operationRepo, CompteRepository $compteRepo, PositionRepository $positionRepo): Response
     {
         $compte = $compteRepo->find($id);
         $compte = $compteRepo->calculSoldes($compte);
         
-        return $this->render('default/backend/myTresorerie/compte_releve.html.twig', [
-            'controller_name' => 'MyTresorerieController',
-            'compte' => $compte,
-            'operationsEcheancesFuturs' => $operationRepo->findEcheances($compte),
-            'operationsNonRapprochees' => $operationRepo->findOperationsNonRapprochees($compte),
-            'operationsRapprochees' => $operationRepo->findOperationsRapprochees($compte),
-        ]);
+        if ($compte->getTypeCompte() != 3 ) {
+            return $this->render('default/backend/myTresorerie/compte_releve.html.twig', [
+                'controller_name' => 'MyTresorerieController',
+                'compte' => $compte,
+                'operationsEcheancesFuturs' => $operationRepo->findEcheances($compte),
+                'operationsNonRapprochees' => $operationRepo->findOperationsNonRapprochees($compte),
+                'operationsRapprochees' => $operationRepo->findOperationsRapprochees($compte),
+            ]);
+        } elseif ($compte->getTypeCompte() == 3) {
+            return $this->render('default/backend/myTresorerie/compte_releve_titre.html.twig', [
+                'controller_name' => 'MyTresorerieController',
+                'compte' => $compte,
+                'positions' => $positionRepo->findAll(),
+                'operations' => $operationRepo->findOperationsRapprochees($compte),
+            ]);
+        } else {
+            return $this->redirectToRoute('app_hacking');
+        }
+
     }
 
     
     /**
      * @Route("/tresorerie/operation/credit", name="app_myTresorerie_operation_credit")
      * @Route("/tresorerie/operation/credit/{id}", name="app_myTresorerie_operation_credit_edit")
-     * @Route("/tresorerie/compte/{idCompte}/credit/debit", name="app_myTresorerie_compte_operation_credit_add")
+     * @Route("/tresorerie/compte/{idCompte}/operation/credit", name="app_myTresorerie_compte_operation_credit_add")
      */
     public function mytresorerie_operation_credit(?int $id,?int $idCompte, SocieteRepository $societeRepo, PersonneRepository $personnneRepo, SousCategorieRepository $sousCategorieRepo, OperationRepository $operationRepo,ModePaiementRepository $modePaiementRepo, CompteRepository $compteRepo, Request $requete,EntityManagerInterface $em): Response
     {
@@ -203,6 +219,121 @@ class MyTresorerieController extends AbstractController
             'controller_name' => 'MyTresorerieController',
             'form' => $form->createView(),
             'compte' => $idCompte
+        ]);
+    }
+
+    /**
+     * @Route("/tresorerie/compte/{idCompte}/titre", name="app_myTresorerie_compte_operation_titre_add")
+     */
+    public function mytresorerie_operation_titre(?int $idCompte,PositionOrdreRepository $PositionOrdreRepo,CompteRepository $compteRepo, SousCategorieRepository $sousCategorieRepo, SocieteRepository $societeRepo, Request $requete,EntityManagerInterface $em): Response
+    {
+        $PositionOrdre = new PositionOrdre();
+        $compte = $compteRepo->find($idCompte);
+ 
+        $form = $this->createFormBuilder($PositionOrdre)
+            ->add('societeID',SocieteChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'data' => $PositionOrdre->getPosition() ?  $PositionOrdre->getPosition()->getSociete()->getId() : "-1"
+            ])
+            ->add('PositionSocieteAbrege', TextType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('typeMouvement', ChoiceType::class, array(
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    'Achat' => 'A',
+                    'Vente' => 'V'
+                ),
+            ))
+            ->add('TypePosition', ChoiceType::class, array(
+                'mapped' => false,
+                'multiple' => false,
+                'attr' => ['class' => 'form-control'],
+                'choices' => array(
+                    'Comptant' => 'C',
+                    'SRD' => 'S'
+                ),
+            ))
+            ->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'format' => 'dd/MM/yyyy',
+                'html5' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-plugin-masked' => 'data-plugin-masked-input',
+                    'data-input-mask' => '99-99-9999',
+                    'placeholder' => '__/__/____'
+                ],
+                'data' => $PositionOrdre->getDate() ? $PositionOrdre->getDate() : new DateTime()
+            ])   
+            ->add('categorieID',SousCategorieChoiceType::class, [
+                'mapped' => false,
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('nombre_titres', IntegerType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('valeur_titre', NumberType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('taxe', NumberType::class, [
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
+            ->add('frais', NumberType::class, [
+                'attr' => ['class' => 'form-control'],
+            ])
+            // ->add('est_pointe', CheckboxType::class, [
+            //     'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
+            //     'required' => false
+            // ])
+            ->getform()
+        ;
+
+        $form->handleRequest($requete);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // On va d'abord créer la position
+            $position = new Position();
+            $position->setCompte($compte);
+            $position->setSociete($societeRepo->find($requete->request->get('form')['societeID']));
+            $position->setPosition($requete->request->get('form')['TypePosition']);
+            $position->setAbregeSociete($requete->request->get('form')['PositionSocieteAbrege']);
+
+            $em->persist($position);
+            $em->flush();
+
+            // On enregistre ensuite l'ordre
+            $PositionOrdre->setPosition($position);
+
+            $em->persist($PositionOrdre);
+            $em->flush();
+
+            // On crée enfin l'opération uniquement pour les opérations comptats
+            // Le réglement SRD sera fait en fin de mois
+            if ($position->getPosition() == 'C') {
+                $sousCategorie = $sousCategorieRepo->find($requete->request->get('form')['categorieID']);
+                $operation = new Operation();
+                $operation->setOperationFromPositionOrdre($PositionOrdre, $sousCategorie);
+
+                $em->persist($operation);
+                $em->flush();
+            }
+            
+            $this->addFlash("userUpdate", "Ajout Ordre effectué");
+            return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $compte->getId()]);
+        
+        }
+
+        return $this->render('default/backend/myTresorerie/operation_titre.html.twig', [
+            'controller_name' => 'MyTresorerieController',
+            'form' => $form->createView(),
+            'compte' => $compte
         ]);
     }
 

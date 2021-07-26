@@ -1,0 +1,119 @@
+{% extends 'default/backend/index.html.twig' %}
+
+{% block titre_page %}TRESORERIE{% endblock %}
+
+{% block css_header %}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+    		<link rel="stylesheet" href="{{ asset('assets/vendor/morris/morris.css') }}" />
+{% endblock %}
+
+{% block contenu_site %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">POSITION FINANCIERE</h2>
+            <p class="panel-subtitle">Formulaire de saisie </p>
+            <div class="panel-actions">
+                <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : compte.id }) }}">
+                    <button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> ANNULER</button>
+                </a>
+            </div>
+        </header>
+        <div class="panel-body">
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
+            {% endfor %}
+            <div class="col-md-12 col-sm-offset-1">
+                {{ form_start(form)}}
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">DATE</label>
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                {{ form_widget(form.date) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">ACTION</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.societeID) }}
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ path('app_societes_ajout') }}" class="btn btn-sm btn-info btn-block">AJOUT</a>
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">ABREGE SOCIETE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.PositionSocieteAbrege) }}
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">CATEGORIE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.categorieID) }}
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">TYPE DE POSITION</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.TypePosition) }}
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">TYPE D'ORDRE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.typeMouvement) }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">QUANTITE</label>
+                        <div class="col-md-5">
+                            {{ form_widget(form.nombre_titres) }}
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">VALEUR TITRE</label>
+                        <div class="col-md-5">
+                            <div class="input-group input-group-icon">
+                                {{ form_widget(form.valeur_titre) }}
+                                <span class="input-group-addon">
+                                    <span class="icon"><i class="fa fa-euro"></i></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">FRAIS</label>
+                        <div class="col-md-5">
+                            <div class="input-group input-group-icon">
+                                {{ form_widget(form.frais) }}
+                                <span class="input-group-addon">
+                                    <span class="icon"><i class="fa fa-euro"></i></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="societeID">
+                        <label class="col-md-2 control-label">TAXE</label>
+                        <div class="col-md-5">
+                            <div class="input-group input-group-icon">
+                                {{ form_widget(form.taxe) }}
+                                <span class="input-group-addon">
+                                    <span class="icon"><i class="fa fa-euro"></i></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7 text-right">
+                        <input type="submit" class="btn btn-sm btn-success" value="VALIDER" />
+                    </div>
+                {{ form_end(form)}}
+            </div>
+        </div>
+    </section>
+{% endblock %}

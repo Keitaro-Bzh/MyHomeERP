@@ -23,46 +23,31 @@
                 <div class="tabs">
                     <ul class="nav nav-tabs">
                         <li class="active">
-                            <a href="#releves" data-toggle="tab"><i class="fa fa-tasks"></i> Relevé de comptes</a>
+                            <a href="#operations" data-toggle="tab"><i class="fa fa-spinner"></i> Positions en cours</a>
                         </li>
                         <li>
-                            <a href="#operations" data-toggle="tab"><i class="fa fa-spinner"></i> Operations non rapprochées</a>
-                        </li>
-                        <li>
-                            <a href="#echeances" data-toggle="tab"><i class="fa fa-tachometer"></i> Echéances du mois</a>
+                            <a href="#releves" data-toggle="tab"><i class="fa fa-tasks"></i> Historique mouvements</a>
                         </li>
                     </ul>
                     <div class="tab-content">
-                        <div id="releves" class="tab-pane active">
-                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsRapprochees} %}
+                        <div id="operations" class="tab-pane active">
+                            {% include 'default/backend/myTresorerie/compte_releve_positions.html.twig' with {'positions': positions} %}
                         </div>
-                        <div id="operations" class="tab-pane">
-                            {% include 'default/backend/myTresorerie/compte_releve_operationsNR.html.twig' with {'operations': operationsNonRapprochees} %}
-                        </div>
-                        <div id="echeances" class="tab-pane">
-                            {% include 'default/backend/myTresorerie/compte_releve_echeances.html.twig' with {'operations': operationsEcheancesFuturs} %}
+                        <div id="releves" class="tab-pane">
+                            {% include 'default/backend/myTresorerie/compte_releve_positions_operations.html.twig' with {'operations': operations} %}
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-2 text-center">
-                <div class="col-md-12 alert alert-{% if compte.SoldeReel < 0 %}danger{% else %}success{% endif %}">
-                    <p>Solde Cours</p> 
-                    <p class="text-{% if compte.SoldeCours < 0 %}danger{% else %}success{% endif %}"><strong>{{ compte.SoldeCours }} €</strong></p>
-                    <p>Solde Réel</p>
-                    <p class="text-{% if compte.SoldeReel < 0 %}danger{% else %}success{% endif %}"><strong>{{ compte.SoldeReel }} €</strong></p>
+                <div class="col-md-12 alert alert-success">
+                     <p>Solde Espèce</p>
+                    <p class="text-success"><strong>{{ compte.SoldeReel }} €</strong></p>
                 </div> 
-                {% if compte.typeCompte == 3 %}
-                    <a href="{{ path('app_myTresorerie_compte_operation_titre_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-money" aria-hidden="true"></i> ACTION</button></a>
-                {% endif %}
-                {% if compte.typeCompte != 2 %}
-                    <a href="{{ path('app_myTresorerie_compte_operation_debit_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
-                {% endif %}
+                <a href="{{ path('app_myTresorerie_compte_operation_titre_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-chain" aria-hidden="true"></i> ORDRE</button></a>
+                <a href="{{ path('app_myTresorerie_compte_operation_debit_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-out" aria-hidden="true"></i> DEBIT</button></a>
                 <a href="{{ path('app_myTresorerie_compte_operation_credit_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-sign-in" aria-hidden="true"></i> CREDIT</button></a>
                 <a href="{{ path('app_myTresorerie_compte_virement_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-exchange" aria-hidden="true"></i> VIREMENT</button></a>
-                {% if compte.typeCompte == 1 %}
-                    <a href="{{ path('app_myTresorerie_compte_retrait_add', { 'idCompte' : compte.id }) }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-primary btn-block"><i class="fa fa-money" aria-hidden="true"></i> RETRAIT</button></a>
-                {% endif %}
             </div>
         </div>
     </section>

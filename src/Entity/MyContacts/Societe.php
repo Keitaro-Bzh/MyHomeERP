@@ -5,6 +5,7 @@ namespace App\Entity\MyContacts;
 use App\Entity\MyContrats\Contrat;
 use App\Entity\MyFinances\Echeance;
 use App\Entity\MyFinances\Operation;
+use App\Entity\MyFinances\Position;
 use App\Repository\MyContacts\SocieteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -103,11 +104,17 @@ class Societe
      */
     private $ville;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Position::class, mappedBy="societe", orphanRemoval=true)
+     */
+    private $positions;
+
     public function __construct()
     {
         $this->operations = new ArrayCollection();
         $this->echeances = new ArrayCollection();
         $this->societes_contrats = new ArrayCollection();
+        $this->positions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -346,6 +353,36 @@ class Societe
     public function setVille(?string $ville): self
     {
         $this->ville = $ville;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Position[]
+     */
+    public function getPositions(): Collection
+    {
+        return $this->positions;
+    }
+
+    public function addPosition(Position $position): self
+    {
+        if (!$this->positions->contains($position)) {
+            $this->positions[] = $position;
+            $position->setSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removePosition(Position $position): self
+    {
+        if ($this->positions->removeElement($position)) {
+            // set the owning side to null (unless already changed)
+            if ($position->getSociete() === $this) {
+                $position->setSociete(null);
+            }
+        }
 
         return $this;
     }

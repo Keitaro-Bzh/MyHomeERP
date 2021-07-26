@@ -113,6 +113,11 @@ class Compte
      */
     private $compte_virement_interne;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Position::class, mappedBy="Compte", orphanRemoval=true)
+     */
+    private $positions;
+
     public function __construct()
     {
         $this->modePaiements = new ArrayCollection();
@@ -122,6 +127,7 @@ class Compte
         $this->echeances_virement = new ArrayCollection();
         $this->contratFacturations = new ArrayCollection();
         $this->compte_virement_interne = new ArrayCollection();
+        $this->positions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -453,6 +459,36 @@ class Compte
             // set the owning side to null (unless already changed)
             if ($compteVirementInterne->getCompteVirementInterne() === $this) {
                 $compteVirementInterne->setCompteVirementInterne(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Position[]
+     */
+    public function getPositions(): Collection
+    {
+        return $this->positions;
+    }
+
+    public function addPosition(Position $position): self
+    {
+        if (!$this->positions->contains($position)) {
+            $this->positions[] = $position;
+            $position->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removePosition(Position $position): self
+    {
+        if ($this->positions->removeElement($position)) {
+            // set the owning side to null (unless already changed)
+            if ($position->getCompte() === $this) {
+                $position->setCompte(null);
             }
         }
 

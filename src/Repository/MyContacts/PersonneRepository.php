@@ -24,8 +24,8 @@ class PersonneRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere('c.archive is null')
             ->orWhere('c.archive = 0')
-            ->orderBy('c.nom', 'ASC')
-            ->orderBy('c.prenom', 'ASC')
+            ->addorderBy('c.nom' , 'ASC')
+            ->addorderBy('c.prenom', 'ASC')
             ->getQuery()
             ->getResult()
         ;
