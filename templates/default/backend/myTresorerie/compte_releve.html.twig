@@ -2,14 +2,19 @@
 
 {% block titre_page %}TRESORERIE{% endblock %}
 
+{% block header_css %}
+    <!-- Specific Page Vendor CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
+{% endblock %}
+
 {% block contenu_site %}
     <section class="panel">
         <header class="panel-heading">
             <h2 class="panel-title">[{{ compte.banque.societe.nom|upper }}] {{ compte.libelle }}</h2>
             <p class="panel-subtitle">TITULAIRE{% if compte.Cotitulaire %}S{% endif %} : {{ compte.titulaire.nom }} {{ compte.titulaire.prenom }} {% if compte.Cotitulaire %} - {{ compte.Cotitulaire.nom }} {{ compte.Cotitulaire.prenom }}{% endif %}</p>
             <div class="panel-actions">
-               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> RETOUR</button></a>
-                
+               <a href="{{ path('app_myTresorerie_index') }}"><button type="button" class="mb-xs mt-xs mr-xs btn-sm btn btn-warning"><i class="fa fa-rotate-left" aria-hidden="true"></i> RETOUR</button></a>    
             </div>
         </header>
         <div class="panel-body">
@@ -34,7 +39,7 @@
                     </ul>
                     <div class="tab-content">
                         <div id="releves" class="tab-pane active">
-                            {% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsRapprochees} %}
+                            <p>{% include 'default/backend/myTresorerie/compte_releve_operations.html.twig' with {'operations': operationsRapprochees} %}</p>
                         </div>
                         <div id="operations" class="tab-pane">
                             {% include 'default/backend/myTresorerie/compte_releve_operationsNR.html.twig' with {'operations': operationsNonRapprochees} %}
@@ -68,7 +73,7 @@
     </section>
 {% endblock %}
 
-{% block page_script %}
+{% block footer_script %}
     <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
     <script src="{{ asset('assets/vendor/jquery-datatables/media/js/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('assets/vendor/jquery-datatables-bs3/assets/js/datatables.js') }}"></script>

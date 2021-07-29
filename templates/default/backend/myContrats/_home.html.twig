@@ -20,7 +20,7 @@
                         <div class="panel-body">
                             <section class="panel">
                                 <div class="panel-body">
-                                        <table class="table table-bordered table-striped mb-none" id="datatable-editable">
+                                        <table class="table table-bordered table-striped mb-none" id="datatable-contrats">
                                             <thead>
                                                 <tr>
                                                     <th class='col-md-1 text-center'>Date signature</th>
@@ -62,5 +62,11 @@
             </div>
         </div>
     </section>
-    {% block footer_Script %}{% endblock %}
+{% endblock %}
+
+{% block footer_script %}
+    <script src="{{ asset('assets/javascripts/ui-elements/examples.modals.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables/media/js/jquery.dataTables.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables-bs3/assets/js/datatables.js') }}"></script>
+    <script src="{{ asset('assets/javascripts/tables/datatables.contrats.js') }}"></script>
 {% endblock %}

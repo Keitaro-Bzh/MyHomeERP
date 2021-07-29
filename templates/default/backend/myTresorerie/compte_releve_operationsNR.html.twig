@@ -1,116 +1,107 @@
-{% block header_css %}
-    <!-- Specific Page Vendor CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/select2/select2.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/jquery-datatables-bs3/assets/css/datatables.css') }}" />
-{% endblock %}
-
-<div class="table-responsive">
-    {% if operations|length > 0 %}
-        <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-operationsNR">
-            <thead>
+{% if operations|length > 0 %}
+    <table class="table table-bordered table-striped table-condensed mb-none" id="datatable-operationsNR">
+        <thead>
+            <tr>
+                <th class="text-center col-md-1">Date</th>
+                <th class="text-center col-md-4">Tiers/Description</th>
+                <th class="text-center col-md-4">Catégorie</th>
+                <th class="text-center col-md-1">Débit</th>
+                <th class="text-center col-md-1">Crédit</th>
+                <th class="text-center col-md-1">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for operation in operations %}
                 <tr>
-                    <th class="text-center col-md-1">Date</th>
-                    <th class="text-center col-md-4">Tiers/Description</th>
-                    <th class="text-center col-md-4">Catégorie</th>
-                    <th class="text-center col-md-1">Débit</th>
-                    <th class="text-center col-md-1">Crédit</th>
-                    <th class="text-center col-md-1">Options</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for operation in operations %}
-                    <tr>
-                        <td class="text-center">
-                            {{ operation.date|date('Y/m/d') }}<br />
-                            {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "DEB" )%}<i class="fa fa-chevron-circle-left"></i>{% endif %}
-                            {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "CRE" )%}<i class="fa fa-chevron-circle-right"></i>{% endif %}
-                            {% if operation.modePaiementTrigramme == 'PRE' %}<i class="fa fa-caret-square-o-left"></i>{% endif %}
-                            {% if operation.modePaiementTrigramme == 'CB' %}<i class="fa fa-credit-card"></i>{% endif %}
-                            {% if operation.modePaiementTrigramme == 'CHQ' %}<i class="fa fa-file-text-o"></i>{% endif %}
-                            {% if operation.modePaiementTrigramme == 'PAY' %}<i class="fa fa-bitcoin"></i>{% endif %}
-                            {% if operation.modePaiementTrigramme == 'DEP' %}<i class="fa fa-caret-square-o-right"></i>{% endif %}
-                            {% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i>{% endif %}
-                            {% if operation.typeOperation == "VII" %}<i class="fa fa-exchange"></i>{% endif %}
-                        </td>
-                        <td>
-                            <strong>
-                                {% if operation.typeOperation == "RET" %} Retrait espèces {% endif %}
-                                {% if operation.typeOperation == "VII" %}
-                                    {{ operation.compteVirementInterne.titulaire.nom }} {{ operation.compteVirementInterne.titulaire.prenom }}
-                                    {% if operation.compteVirementInterne.cotitulaire %} / {{ operation.compteVirementInterne.cotitulaire.nom }} {{ operation.compteVirementInterne.cotitulaire.prenom }}{% endif %}
-                                {% endif %}
-                                {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE") %}
-                                    {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
-                                    {% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
-                                    {% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
-                                {% endif %}
-                            </strong><br />
-                            <div class="text-muted">
-                                {% if operation.typeOperation == "VII"%}{{ operation.compteVirementInterne.libelle }} [{{ operation.compteVirementInterne.banque.societe.nom }}] {% endif %}
-                                {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
-                                    {{ operation.description }}
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            {% if operation.categorie != null %}
-                            <strong>{{ operation.categorie.categorie.nom|capitalize }}</strong>
-                            <div class="text-muted">{{ operation.categorie.nom }}</div>
-                            {% endif %}
-                        </td>
-                        <td class="text-right text-danger">{% if operation.debit > 0 %}{{ operation.debit }} €{% endif %}</td>
-                        <td class="text-right text-success">{% if operation.credit > 0 %}{{ operation.credit }} €{% endif %}</td>
-                        <td class="text-center">
-                            {% if operation.typeOperation == "RET" %}
-                                <a href="{{ path('app_myTresorerie_retrait_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
-                            {% endif %}
+                    <td class="text-center">
+                        {{ operation.date|date('Y/m/d') }}<br />
+                        {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "DEB" )%}<i class="fa fa-chevron-circle-left"></i>{% endif %}
+                        {% if (operation.modePaiementTrigramme == 'VIR'and operation.typeOperation == "CRE" )%}<i class="fa fa-chevron-circle-right"></i>{% endif %}
+                        {% if operation.modePaiementTrigramme == 'PRE' %}<i class="fa fa-caret-square-o-left"></i>{% endif %}
+                        {% if operation.modePaiementTrigramme == 'CB' %}<i class="fa fa-credit-card"></i>{% endif %}
+                        {% if operation.modePaiementTrigramme == 'CHQ' %}<i class="fa fa-file-text-o"></i>{% endif %}
+                        {% if operation.modePaiementTrigramme == 'PAY' %}<i class="fa fa-bitcoin"></i>{% endif %}
+                        {% if operation.modePaiementTrigramme == 'DEP' %}<i class="fa fa-caret-square-o-right"></i>{% endif %}
+                        {% if operation.typeOperation == "RET" %}<i class="fa fa-money"></i>{% endif %}
+                        {% if operation.typeOperation == "VII" %}<i class="fa fa-exchange"></i>{% endif %}
+                    </td>
+                    <td>
+                        <strong>
+                            {% if operation.typeOperation == "RET" %} Retrait espèces {% endif %}
                             {% if operation.typeOperation == "VII" %}
-                                <a href="{{ path('app_myTresorerie_virement_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                                {{ operation.compteVirementInterne.titulaire.nom }} {{ operation.compteVirementInterne.titulaire.prenom }}
+                                {% if operation.compteVirementInterne.cotitulaire %} / {{ operation.compteVirementInterne.cotitulaire.nom }} {{ operation.compteVirementInterne.cotitulaire.prenom }}{% endif %}
                             {% endif %}
-                            {% if operation.typeOperation == "DEB" %}
-                                <a href="{{ path('app_myTresorerie_operation_debit_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                            {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE") %}
+                                {% if operation.typeTiers == 'L' %}{{ operation.tiersLibelle }}{% endif %}
+                                {% if operation.typeTiers == 'P' %}{{ operation.Personne.nom }} {{ operation.Personne.prenom }}{% endif %}
+                                {% if operation.typeTiers == 'S' %}{{ operation.Societe.nom }}{% endif %}
                             {% endif %}
-                            {% if operation.typeOperation == "CRE" %}
-                                <a href="{{ path('app_myTresorerie_operation_credit_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                        </strong><br />
+                        <div class="text-muted">
+                            {% if operation.typeOperation == "VII"%}{{ operation.compteVirementInterne.libelle }} [{{ operation.compteVirementInterne.banque.societe.nom }}] {% endif %}
+                            {% if (operation.typeOperation == "DEB" or operation.typeOperation == "CRE")   %}
+                                {{ operation.description }}
                             {% endif %}
-                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); document.getElementById('js-operation-pointage-{{operation.id}}').submit();"><i class="fa fa-check-square"></i></a>
-                            <form id="js-operation-pointage-{{operation.id}}"  action="{{ path('app_operation_pointage', { 'id' : operation.id }) }}" method="post" style="display:none;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_pointage_' ~ operation.id) }}">
-                                <input type="hidden" name="_method" value="UPDATE">
-                            </form>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        {% if operation.categorie != null %}
+                        <strong>{{ operation.categorie.categorie.nom|capitalize }}</strong>
+                        <div class="text-muted">{{ operation.categorie.nom }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-right text-danger">{% if operation.debit > 0 %}{{ operation.debit }} €{% endif %}</td>
+                    <td class="text-right text-success">{% if operation.credit > 0 %}{{ operation.credit }} €{% endif %}</td>
+                    <td class="text-center">
+                        {% if operation.typeOperation == "RET" %}
+                            <a href="{{ path('app_myTresorerie_retrait_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                        {% endif %}
+                        {% if operation.typeOperation == "VII" %}
+                            <a href="{{ path('app_myTresorerie_virement_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                        {% endif %}
+                        {% if operation.typeOperation == "DEB" %}
+                            <a href="{{ path('app_myTresorerie_operation_debit_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                        {% endif %}
+                        {% if operation.typeOperation == "CRE" %}
+                            <a href="{{ path('app_myTresorerie_operation_credit_edit', { 'id' : operation.id }) }}"><i class="fa fa-pencil"></i></a>
+                        {% endif %}
+                        <a href="#" class="on-default remove-row" onclick="event.preventDefault(); document.getElementById('js-operation-pointage-{{operation.id}}').submit();"><i class="fa fa-check-square"></i></a>
+                        <form id="js-operation-pointage-{{operation.id}}"  action="{{ path('app_operation_pointage', { 'id' : operation.id }) }}" method="post" style="display:none;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_pointage_' ~ operation.id) }}">
+                            <input type="hidden" name="_method" value="UPDATE">
+                        </form>
 
-                            <a class="modal-basic" href="#modalBasicOperation{{ operation.id }}"><i class="fa fa-trash-o"></i></a>
-                        </td>
-                    </tr>
+                        <a class="modal-basic" href="#modalBasicOperation{{ operation.id }}"><i class="fa fa-trash-o"></i></a>
+                    </td>
+                </tr>
 
 
-                    {# Fenetre modèle pour valider la suppression d'une ficher operation #}
-                    <div id="modalBasicOperation{{ operation.id }}" class="modal-block modal-block-primary mfp-hide">
-                        <section class="panel">
-                            <header class="panel-heading">
-                                <h2 class="panel-title">Etes-vous sur de vouloir supprimer cette operation?</h2>
-                            </header>
-                            <footer class="panel-footer">
-                                <div class="row">
-                                    <div class="col-md-12 text-right">
-                                        <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
-                                        <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-operation-effacer-{{operation.id}}').submit();">CONFIRMER</button>
-                                        <form id="js-operation-effacer-{{operation.id}}"  action="{{ path('app_operation_del', { 'id' : operation.id }) }}" method="post" style="display:none;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_supprime_' ~ operation.id) }}">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                        </form>
-                                    </div>
+                {# Fenetre modèle pour valider la suppression d'une ficher operation #}
+                <div id="modalBasicOperation{{ operation.id }}" class="modal-block modal-block-primary mfp-hide">
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">Etes-vous sur de vouloir supprimer cette operation?</h2>
+                        </header>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-md-12 text-right">
+                                    <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                    <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-operation-effacer-{{operation.id}}').submit();">CONFIRMER</button>
+                                    <form id="js-operation-effacer-{{operation.id}}"  action="{{ path('app_operation_del', { 'id' : operation.id }) }}" method="post" style="display:none;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('operation_supprime_' ~ operation.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                    </form>
                                 </div>
-                            </footer>
-                        </section>
-                    </div>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="alert alert-success">
-            Aucune opération n'a été enregistrée pour le moment.
-        </div>
-    {% endif %}
-</div>
-
+                            </div>
+                        </footer>
+                    </section>
+                </div>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-success">
+        Aucune opération n'a été enregistrée pour le moment.
+    </div>
+{% endif %}

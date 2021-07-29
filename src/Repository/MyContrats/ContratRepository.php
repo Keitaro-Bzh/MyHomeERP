@@ -22,11 +22,11 @@ class ContratRepository extends ServiceEntityRepository
     public function findActif()
     {
         $contrats = $this->createQueryBuilder('c')
-            ->andWhere('c.date_fin_contrat <= :now')
+            ->andWhere('c.date_fin_contrat >= :now')
             ->orWhere('c.date_fin_contrat is null')
             ->andWhere('c.est_archive = false')
             ->setParameter('now',new \DateTime('now'))
-            ->orderBy('c.date_signature', 'ASC')
+            ->orderBy('c.Societe', 'ASC')
             ->getQuery()
             ->getResult()
         ;
