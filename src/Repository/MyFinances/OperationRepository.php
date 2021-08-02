@@ -57,6 +57,16 @@ class OperationRepository extends ServiceEntityRepository
         ;
     }
 
+    public function findOperationAllByEcheanceOperation($echeanceOperation)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.echeance_operation = :param')
+            ->setParameter('param', $echeanceOperation)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findOperationsRapprochees($compte)
     {
         return $this->createQueryBuilder('c')

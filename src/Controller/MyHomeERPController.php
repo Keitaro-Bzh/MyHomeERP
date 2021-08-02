@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Form\PersonneChoiceType;
-use App\Repository\MyContacts\PersonneRepository;
+use App\Repository\MyContacts\PersonneRepository;;
 use App\Repository\MyFinances\BanqueRepository;
 use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\CategorieRepository;
@@ -41,7 +41,7 @@ class MyHomeERPController extends AbstractController
             ]);
         }
         else {  
-            return $this->redirectToRoute('app_login');        
+            return $this->redirectToRoute('app_login');
         }
     }
 

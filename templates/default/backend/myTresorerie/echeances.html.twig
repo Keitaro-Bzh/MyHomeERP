@@ -53,7 +53,7 @@
                             {% if echeance.typeOperation != 'VII' %}
                                 <tr>
                                     <td class="col-md-4">
-                                        [{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}
+                                        <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : echeance.compte.id }) }}">[{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}</a>
                                         <div class="text-muted">
                                             {{ echeance.compte.titulaire.nom|upper }} {{ echeance.compte.titulaire.prenom }}
                                             {% if (echeance.compte.coTitulaire) %}
@@ -65,7 +65,7 @@
                                         {% if (echeance.tiersSociete) %}
                                             {{ echeance.tiersSociete.nom }}
                                         {% elseif (echeance.tiersPersonne) %}
-                                            {{ echeance.tiersPersonne.nom }}
+                                            {{ echeance.tiersPersonne.nom }} {{ echeance.tiersPersonne.prenom }}
                                         {% else %}
                                             {{ echeance.tiersLibelle }}
                                         {% endif %}
@@ -73,10 +73,10 @@
                                             {{ echeance.description }}
                                         </div>
                                     </td>
-                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d-m-Y') }}</td>
+                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d/m/Y') }}</td>
                                     <td class="text-right  {% if echeance.typeOperation ==  'DEB' %}text-danger{% endif %}{% if echeance.typeOperation ==  'CRE' %}text-success{% endif %}">
                                        
-                                             {{ echeance.montantTotal }} €
+                                             {{ echeance.montantTotal|number_format(2, ',', ' ') }} €
                                     </td>
                                     <td class="text-center">
                                         {% if echeance.nombreEcheances == 0 %}
@@ -86,12 +86,39 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        <a class="modal-basic" href="#modalBasicEcheance{{ echeance.id }}"><i class="fa fa-trash-o"></i></a>
+                                        <a class="modal-basic" href="#modalBasicEcheanceArchive{{ echeance.id }}" title="Archiver"><i class="fa fa-archive"></i></a>
+                                        <a class="modal-basic" href="#modalBasicEcheanceDelete{{ echeance.id }}" title="Supprimer"><i class="fa fa-trash-o"></i></a>
                                     </td>
                                 </tr>
 
+                                {# Fenetre modèle pour valider l'archivage d'une ficher echeance #}
+                                <div id="modalBasicEcheanceArchive{{ echeance.id }}" class="modal-block modal-block-primary mfp-hide">
+                                    <section class="panel">
+                                        <header class="panel-heading">
+                                            <h2 class="panel-title">Etes-vous sur d'archiver l'échéance?</h2>
+                                        </header>
+                                        <div class="panel-body">
+                                            <p>
+                                                L'archivage de l'échéance va supprimer toutes les opérations potentiellement créées mais n'ayant pas été rapprochées. Veillez à bien rapprocher les opérations
+                                                sur votre relevé de compte correspondant.
+                                            </p>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-md-12 text-right">
+                                                    <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                    <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-echeance-archive-{{echeance.id}}').submit();">CONFIRMER</button>
+                                                    <form id="js-echeance-archive-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_archive', { 'id' : echeance.id }) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_archive_' ~ echeance.id) }}">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </div>
+
                                 {# Fenetre modèle pour valider la suppression d'une ficher echeance #}
-                                <div id="modalBasicEcheance{{ echeance.id }}" class="modal-block modal-block-primary mfp-hide">
+                                <div id="modalBasicEcheanceDelete{{ echeance.id }}" class="modal-block modal-block-primary mfp-hide">
                                     <section class="panel">
                                         <header class="panel-heading">
                                             <h2 class="panel-title">Etes-vous sur de vouloir supprimer l'échéance?</h2>
@@ -126,8 +153,8 @@
                         <thead>
                             <tr>
                                 
-                                <th>Compte source</th>
-                                <th>Compte cible</th>
+                                <th>Emetteur</th>
+                                <th>Destinataire</th>
                                 <th class="col-md-1 text-center">Date</th>
                                 <th class="col-md-1 text-center">Montant</th>
                                 <th class="col-md-1 text-center">Options</th>
@@ -138,25 +165,25 @@
                             {% if echeance.typeOperation == 'VII' %}
                                 <tr>
                                     <td>
-                                        [{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}
-                                        <div class="text-muted">
-                                            {{ echeance.compte.titulaire.nom|upper }} {{ echeance.compte.titulaire.prenom }}
+                                        {{ echeance.compte.titulaire.nom|upper }} {{ echeance.compte.titulaire.prenom }}
                                             {% if (echeance.compte.coTitulaire) %}
                                              / {{ echeance.compte.coTitulaire.nom|upper }} {{ echeance.compte.coTitulaire.prenom }}
-                                            {% endif %}
+                                        {% endif %}
+                                        <div class="text-muted">
+                                            <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : echeance.compte.id }) }}">[{{ echeance.compte.banque.societe.nom|upper }}] {{ echeance.compte.libelle }}</a>
                                         </div>
                                     </td>
                                     <td>
-                                        [{{ echeance.compteDestinataireVirement.banque.societe.nom|upper }}] {{ echeance.compteDestinataireVirement.libelle }}
-                                        <div class="text-muted">
-                                            {{ echeance.compteDestinataireVirement.titulaire.nom|upper }} {{ echeance.compteDestinataireVirement.titulaire.prenom }}
+                                        {{ echeance.compteDestinataireVirement.titulaire.nom|upper }} {{ echeance.compteDestinataireVirement.titulaire.prenom }}
                                             {% if (echeance.compteDestinataireVirement.coTitulaire) %}
                                              / {{ echeance.compteDestinataireVirement.coTitulaire.nom|upper }} {{ echeance.compteDestinataireVirement.coTitulaire.prenom }}
-                                            {% endif %}
+                                        {% endif %}
+                                        <div class="text-muted">
+                                            <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : echeance.compteDestinataireVirement.id }) }}">[{{ echeance.compteDestinataireVirement.banque.societe.nom|upper }}] {{ echeance.compteDestinataireVirement.libelle }}</a>
                                         </div>
                                     </td>
-                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d-m') }}</td>
-                                    <td class="text-right">{{ echeance.montantTotal }} €</td>
+                                    <td class="text-center">{{ echeance.dateEcheanceOne|date('d/m') }}</td>
+                                    <td class="text-right">{{ echeance.montantTotal|number_format(2, ',', ' ') }} €</td>
                                     <td class="text-center">
                                         <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur de vouloir continuer?') && document.getElementById('js-echeance-effacer-{{echeance.id}}').submit();"><i class="fa fa-trash-o"></i></a>
                                         <form id="js-echeance-effacer-{{echeance.id}}"  action="{{ path('app_myTresorerie_echeance_del', { 'id' : echeance.id }) }}" method="post" style="display:none;">

@@ -131,17 +131,12 @@ class MyContratsController extends AbstractController
 
         /**
      * @Route("/contrats/{id}/facturation/add", name="app_myContrats_facturation_form")
-     * @Route("/contrats/{id}/facturation/edit/{idFacturation}", name="app_myContrats_facturation_edit")
      */
-    public function app_myContrats_facturation_form(int $id, ?int $idFacturation,CompteRepository $compteRepo, ContratFacturationRepository $contratFacturationRepo, SocieteRepository $societeRepo, SousCategorieRepository $sousCategorieRepo, Request $requete, EntityManagerInterface $em, ContratRepository $contratRepo): Response
+    public function app_myContrats_facturation_form(int $id,CompteRepository $compteRepo, ContratFacturationRepository $contratFacturationRepo, SocieteRepository $societeRepo, SousCategorieRepository $sousCategorieRepo, Request $requete, EntityManagerInterface $em, ContratRepository $contratRepo): Response
     {
         $contrat = $contratRepo->find($id);
-        $contratFacturations = $contratFacturationRepo->findBy(['Contrat' => $contrat ]);
-
         $contratFacturation = new ContratFacturation;
-        if (isset($idFacturation)) {
-            $contratFacturations = $contratFacturationRepo->find($idFacturation);
-        }
+        $contratFacturations = $contratFacturationRepo->findAllOrderDateDebut($contrat);
 
         $form = $this->createFormBuilder($contratFacturation)
             ->add('type_mouvement', ChoiceType::class, [
@@ -224,7 +219,7 @@ class MyContratsController extends AbstractController
                 $em->flush();
                 
                 // On va générer les opérations d'échéance associées 
-                if (count($echeance->getTabEcheanceOperations()) > 0) {
+                if (is_array ($echeance->getTabEcheanceOperations()) && count($echeance->getTabEcheanceOperations()) > 0) {
                     for ($i = 1; $i <= count($echeance->getTabEcheanceOperations()); $i++) {
                         $echeanceOperation = new EcheanceOperation;
                         $echeanceOperation = $echeance->getTabEcheanceOperations()[$i];
@@ -290,10 +285,14 @@ class MyContratsController extends AbstractController
     public function utilisateurDelete(int $id,Contrat $contrat, Request $requete, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('contrat_supprime_' . $contrat->getId(), $requete->request->get('csrf_token'))) {
-            $em->remove($contrat);
-            $em->flush();
-
-            $this->addFlash("flashMSG", "Enregistrement supprimé");
+            try {
+                $em->remove($contrat);
+                $em->flush();
+                $this->addFlash("errorMSG", "Enregistrement supprimé");
+            } catch (\Exception $e) {
+                $this->addFlash("errorMSG", "Suppression impossible - Le contrat est référencée dans un autre module. Procédez à un archivage à la place");
+            }
+            
             return $this->redirectToRoute('app_myContrats');
         }
         else {

@@ -13,9 +13,12 @@ use App\Form\SocieteBanqueChoiceType;
 use App\Form\SousCategorieChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
 use App\Repository\MyContacts\SocieteRepository;
+use App\Repository\MyContrats\ContratFacturationRepository;
 use App\Repository\MyFinances\CompteRepository;
+use App\Repository\MyFinances\EcheanceOperationRepository;
 use App\Repository\MyFinances\EcheanceRepository;
 use App\Repository\MyFinances\ModePaiementRepository;
+use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\SousCategorieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,7 +42,7 @@ class MyTresorerieEcheanceController extends AbstractController
     {
         return $this->render('/default/backend/myTresorerie//echeances.html.twig', [
             'controller_name' => 'MyTresorerieEcheanceController',
-            'echeances' => $echeanceRepo->findActif()
+            'echeances' => $echeanceRepo->findActifs()
         ]);
     }
 
@@ -187,6 +190,9 @@ class MyTresorerieEcheanceController extends AbstractController
                     default:
                         $echeance->setModePaiement($modePaiementRepo->find($requete->request->get('form')['modePaiementID']));
                         $echeance->setModePaiementTrigramme($echeance->getModePaiement()->getModePaiement());
+                        if ($echeance->getNombreEcheances() > 0) {
+                            $echeance->setMontantFraction(true);
+                        }
                         break;
                 }
                 // on force la fréquence à 1 paiement par mois
@@ -402,7 +408,6 @@ class MyTresorerieEcheanceController extends AbstractController
 
     /**
      * @Route("/tresorerie/echeance/virement/add", name="app_myTresorerie_echeance_virement_add")
-     * @Route("/tresorerie/echeance/virement/edit/{id}", name="app_myTresorerie_echeance_virement_edit", methods ={"GET","POST"})
      */
     public function mytresorerie_echeancier_virement_form(?int $id,CompteRepository $compteRepo, ModePaiementRepository $modePaiementRepo, SocieteRepository $societeRepo, PersonneRepository $personneRepo, EcheanceRepository $echeanceRepo, Request $requete, EntityManagerInterface $em): Response
     {
@@ -545,6 +550,55 @@ class MyTresorerieEcheanceController extends AbstractController
             'controller_name' => 'MyTresorerieController',
             'form' => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/tresorerie/echeance/archive/{id}", name="app_myTresorerie_echeance_archive")
+     */
+    public function mytresorerie_echeancier_archive(Echeance $echeance, Request $requete,ContratFacturationRepository $contratFacturationRepo, OperationRepository $operationRepo, EcheanceOperationRepository $echeanceOperationRepo, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('echeance_archive_' . $echeance->getId(),$requete->request->get('csrf_token'))) {
+            $listEcheanceOperations = $echeanceOperationRepo->findOperationByEcheance($echeance);
+            // On va lister toutes les EcheanceOperations pour les supprimer car devenues inutiles
+            if (count($listEcheanceOperations) > 0) {
+                for ($i =0; $i < count($listEcheanceOperations); $i++) {
+                    // on va supprimer l'EcheanceOperation et l'Operation uniquement si cette dernière n'a pas été rapprochée
+                    $operationCours = $operationRepo->findOperationAllByEcheanceOperation ($listEcheanceOperations[$i]);
+                    if (count($operationCours) > 0) {
+                        if ($operationCours[0]->getEstPointe() != true) {
+                            $em->remove($operationCours[0]);
+                            $em->remove($listEcheanceOperations[$i]);
+                            $em->flush();
+                        }
+                    }
+                    else {
+                        // Aucune opération n'a encore été créée donc on peut supprimer sans problème
+                        $em->remove($listEcheanceOperations[$i]);
+                        $em->flush();
+                    }
+                }
+            }
+
+            // On va vérifier si une période de facturation au niveau du contrat existe pour la solder également
+            $contratFacturation = $contratFacturationRepo->findContratFacturationByEcheance($echeance);
+            if ($contratFacturation) {
+                $contratFacturation->setEstArchive(true);
+                $em->persist($contratFacturation);
+                $em->flush();
+            }
+
+            $echeance->setEstSolde(true);
+            $em->persist($echeance);
+            $em->flush();
+
+            $this->addFlash("successMSG", "Archivage effectué");
+
+            return $this->redirectToRoute('app_myTresorerie_echeance');
+        }
+        else {
+            dd('teete');
+            return $this->redirectToRoute('app_hacking');
+        }
     }
 
     /**

@@ -7,6 +7,7 @@
         <header class="panel-heading">
             <div class="panel-actions">
                 <div class="mb-md">
+                    <a href=""><button class="btn btn-danger btn-sm"><i class="fa fa-archive"></i> ARCHIVAGE CONTRAT</button></a>
                     <a href="{{ path('app_myContrats') }}"><button class="btn btn-warning btn-sm"><i class="fa fa-rotate-left"></i> ANNULER</button></a>
                 </div>
             </div>
@@ -60,10 +61,44 @@
                     <div class="text-left">
                         {% for contratFacturation in contratFacturations %}
                         <div class="col-md-9">
-                            [{{ contratFacturation.Compte.Banque.Societe.nom }}] {{ contratFacturation.Compte.libelle }}
+                            {% if contratFacturation.estArchive == true %}
+                                <span class='text-danger'>*** ARCHIVÉE *** <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : contratFacturation.Compte.id }) }}">[{{ contratFacturation.Compte.banque.societe.nom|upper }}] {{ contratFacturation.Compte.libelle }}</a></span>
+                            {% else %}
+                                <a href="{{ path('app_myTresorerie_compte_releve', { 'id' : contratFacturation.Compte.id }) }}">[{{ contratFacturation.Compte.banque.societe.nom|upper }}] {{ contratFacturation.Compte.libelle }}</a>
+                            {% endif %}
                         </div>
                         <div class="col-md-3 text-right">
-                            <i class="fa fa-pencil"></i>
+                            {% if contratFacturation.estArchive == false %}<a class="modal-basic" href="#modalBasicContratFacturation{{ contratFacturation.id }}"><i class="fa fa-archive"></i></a>{% endif %}
+                            
+                            {# Fenetre modèle pour valider la suppression d'une ficher echeance #}
+                            <div id="modalBasicContratFacturation{{ contratFacturation.id }}" class="modal-block modal-block-primary mfp-hide">
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Etes vous sur de vouloir archiver cette période de facturation?</h2>
+                                    </header>
+                                    <div class="panel-body">
+                                        <p>
+                                            L'archive d'une période de facturation va supprimer toutes les opérations non rapprochées et solder les écheances associés
+                                            à la date du jour. L'opération est irreversible, donc assurez vous bien que toutes les échéances ont bien été soldées.
+                                        </p>
+                                        <p>
+                                            L'archivage n'archive pas le contrat pour autant. Il faudra pour se faire procéder à son archivage directement via le
+                                            bouton "ARCHIVAGE CONTRAT"
+                                        </p>
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-md-12 text-right">
+                                                <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-echeance-archive-{{contratFacturation.id}}').submit();">CONFIRMER</button>
+                                                <form id="js-echeance-archive-{{contratFacturation.id}}"  action="{{ path('app_myTresorerie_echeance_archive', { 'id' : contratFacturation.Echeance.id }) }}" method="post" style="display:none;">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token('echeance_archive_' ~ contratFacturation.echeance.id) }}">
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </div>
                         </div>
                         <br />
                         <p class='col-md-12'>

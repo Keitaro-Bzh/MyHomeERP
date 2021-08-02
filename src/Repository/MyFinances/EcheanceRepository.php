@@ -3,6 +3,7 @@
 namespace App\Repository\MyFinances;
 
 use App\Entity\MyFinances\Echeance;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,19 +20,70 @@ class EcheanceRepository extends ServiceEntityRepository
         parent::__construct($registry, Echeance::class);
     }
 
-    public function findActif()
+    public function findActifs()
     {
-        $contrats = $this->createQueryBuilder('c')
-            ->andWhere('c.date_fin >= :now')
-            ->orWhere('c.date_fin is null')
-            ->orWhere('c.est_solde = false')
-            ->setParameter('now',new \DateTime('now'))
-            ->orderBy('c.date_echeance_one', 'ASC')
+        $echeances = $this->createQueryBuilder('c')
+            ->where('(c.est_solde = false OR c.est_solde is NULL ) AND
+                (c.date_fin >= :now OR c.date_fin is null)')
+            ->setParameter('now', new DateTime('Now - 1 day'))
+            ->orderBy('c.nombre_echeances', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+        return $echeances;
+    }
+
+    public function findOldMois()
+    {
+        $echeances = $this->createQueryBuilder('c')
+            ->andWhere('c.date_fin < :dateDebutMois')
+            ->setParameter('dateDebutMois',new \DateTime(date('Y-m-01')))
+            ->orderBy('c.Compte', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+        return $echeances;
+    }
+
+    public function findActifsPeriode($dateDebut, $dateFin)
+    {
+        $echeances = $this->createQueryBuilder('c')
+            ->Where('(c.est_solde = false OR c.est_solde is NULL ) AND
+                (c.date_fin >= :dateDebut OR c.date_fin is null) AND
+                (c.date_echeance_one < :dateFin)')
+            ->setParameter('dateFin',$dateFin)
+            ->setParameter('dateDebut',$dateDebut)
             ->getQuery()
             ->getResult()
         ;
 
-        return $contrats;
+        return $echeances;
+    }
+
+    public function findActifsByDateFin($dateDebut)
+    {
+        $echeances = $this->createQueryBuilder('c')
+            ->Where('(c.est_solde = false OR c.est_solde is NULL )')
+            ->andWhere('c.date_fin < :dateDebut')
+            ->setParameter('dateDebut',$dateDebut)
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return $echeances;
+    }
+
+    public function findActifsDateFinNull()
+    {
+        $echeances = $this->createQueryBuilder('c')
+            ->Where('(c.est_solde = false OR c.est_solde is NULL )')
+            ->andWhere('c.date_fin IS NULL')
+            ->andWhere('c.nombre_echeances > 0')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        return $echeances;
     }
     // /**
     //  * @return Echeance[] Returns an array of Echeance objects

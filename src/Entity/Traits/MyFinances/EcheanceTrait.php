@@ -107,6 +107,8 @@ trait EcheanceTrait
     {
         $numEcheance = 1;
         $montantTotalEcheance = 0;
+        $dateFinMoisCours = new DateTime(date("Y-m-t"));
+
         if ($this->getNombreEcheances() == 0) {
             // On prend en compte les périodes passées dans le cas ou l'on veut recalculer les échéances passées
             if ($this->getDateFin()) {
@@ -119,11 +121,11 @@ trait EcheanceTrait
         else {
             $date_fin_boucle = clone($this->getDateFin());
         }
-        
+
         $dateEcheanceOne = clone($this->getDateEcheanceOne()) ;
         $dateEcheanceDiff = clone($this->getDateEcheanceOne());  
         $dateJourEcheanceOne = $dateEcheanceOne->format('d');
-        $dateFinMoisCours = new DateTime(date("Y-m-t"));
+
 
         if (($this->getNombreEcheances() > 0 ) || ($this->getNombreEcheances() == 0 && $this->getDateEcheanceOne() <= $dateFinMoisCours)) {
 
@@ -197,17 +199,6 @@ trait EcheanceTrait
             // On est dans le cas ou il s'agit d'un contrat permanent débutant après le mois actuel
             // On ne va donc créer aucune entrée. Celle-ci sera calculé en temps et en heure par
             // un traitement automatique
-
-
-            // $echeanceOperation = new EcheanceOperation();
-
-            // $echeanceOperation->setDateEcheance(clone($this->getDateEcheanceOne));
-            // $echeanceOperation->setEcheance($this);
-            // $echeanceOperation->setMontantEcheance($this->getMontantTotal());
-
-            // $this->tabEcheanceOperations[1] = $echeanceOperation;
-            // // On ne crée aucune opération
-            // $this->tabOperations[1] =  null;
         }
         return $this;
     }

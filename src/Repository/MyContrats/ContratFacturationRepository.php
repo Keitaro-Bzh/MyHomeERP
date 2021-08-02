@@ -19,6 +19,28 @@ class ContratFacturationRepository extends ServiceEntityRepository
         parent::__construct($registry, ContratFacturation::class);
     }
 
+    public function findAllOrderDateDebut($contrat)
+    {
+        return $this->createQueryBuilder('c')
+            ->Where('c.Contrat = :param')
+            ->orderBy('c.date_debut', 'desc')
+            ->setParameter('param', $contrat)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function findContratFacturationByEcheance($echeance): ?ContratFacturation
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.Echeance = :param')
+            ->setParameter('param', $echeance)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+
     // /**
     //  * @return ContratFacturation[] Returns an array of ContratFacturation objects
     //  */

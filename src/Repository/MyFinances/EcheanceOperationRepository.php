@@ -19,32 +19,39 @@ class EcheanceOperationRepository extends ServiceEntityRepository
         parent::__construct($registry, EcheanceOperation::class);
     }
 
-    // /**
-    //  * @return EcheanceOperation[] Returns an array of EcheanceOperation objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findOperationByEcheance($echeance)
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('e.echeance = :echeance')
+            ->setParameter('echeance', $echeance)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?EcheanceOperation
+    public function findOperationByEcheancePeriode($echeance,$dateDebut,$dateFin)
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('e.echeance = :echeance')
+            ->andWhere('e.date_echeance >= :dateDebut')
+            ->andWhere('e.date_echeance < :dateFin')
+            ->setParameter('echeance', $echeance)
+            ->setParameter('dateDebut', $dateDebut)
+            ->setParameter('dateFin', $dateFin)
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getResult()
         ;
     }
-    */
+
+    public function findOperationByEcheanceDateDebut($echeance,$dateDebut)
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.echeance = :echeance')
+            ->andWhere('e.date_echeance >= :dateDebut')
+            ->setParameter('echeance', $echeance)
+            ->setParameter('dateDebut', $dateDebut)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

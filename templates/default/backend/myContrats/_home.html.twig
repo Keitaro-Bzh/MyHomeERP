@@ -11,8 +11,8 @@
               </div>
         </header>
         <div class="panel-body">
-            {% for flashError in app.flashes('flashMSG') %}
-                <div class="col-md-12 alert alert-info" role="alert">{{ flashError }}</div>
+            {% for flashMSG in app.flashes('errorMSG') %}
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
             {% endfor %}
             <div class="col-md-12">
                 <section class="panel">
@@ -40,13 +40,36 @@
                                                         <td class="actions text-center col-md-1">
                                                             {% if (contrat.facturable) %}<a href="{{ path('app_myContrats_facturation_form', { 'id' : contrat.id }) }}"><i class="fa fa-folder-open"></i></a>{% endif %}
                                                             <a href="{{ path('app_myContrats_edit', { 'id' : contrat.id }) }}" class="on-default edit-row"><i class="fa fa-pencil"></i></a>
-                                                            <a href="#" class="on-default remove-row" onclick="event.preventDefault(); confirm('Etes vous sur ?') && document.getElementById('js-contrat-effacer-{{contrat.id}}').submit();"><i class="fa fa-trash-o"></i></a>
-                                                            <form id="js-contrat-effacer-{{contrat.id}}"  action="{{ path('app_myContrats_del', { 'id' : contrat.id }) }}" method="post" style="display:none;">
-                                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('contrat_supprime_' ~ contrat.id) }}">
-                                                                <input type="hidden" name="_method" value="DELETE">
-                                                            </form>
+                                                            <a class="modal-basic" href="#modalBasicContrat{{ contrat.id }}"><i class="fa fa-trash-o"></i></a>
                                                         </td>
                                                     </tr>
+
+                                                    
+                                                    {# Fenetre modèle pour valider la suppression d'une ficher echeance #}
+                                                    <div id="modalBasicContrat{{ contrat.id }}" class="modal-block modal-block-primary mfp-hide">
+                                                        <section class="panel">
+                                                            <header class="panel-heading">
+                                                                <h2 class="panel-title">Etes vous sur de vouloir supprimer ce contrat?</h2>
+                                                            </header>
+                                                            <div class="panel-body">
+                                                                <p>
+                                                                    La suppression ne pourra se faire si des échéances et des opérations ont déjà été enregistrées. Dans ce cas, procéder plutot à un archivage
+                                                                </p>
+                                                            </div>
+                                                            <footer class="panel-footer">
+                                                                <div class="row">
+                                                                    <div class="col-md-12 text-right">
+                                                                        <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                                                        <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-echeance-effacer-{{contrat.id}}').submit();">CONFIRMER</button>
+                                                                        <form id="js-contrat-effacer-{{contrat.id}}"  action="{{ path('app_myContrats_del', { 'id' : contrat.id }) }}" method="post" style="display:none;">
+                                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('contrat_supprime_' ~ contrat.id) }}">
+                                                                            <input type="hidden" name="_method" value="DELETE">
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </footer>
+                                                        </section>
+                                                    </div>
                                                 {% endfor %}
                                             </tbody>
                                         </table>

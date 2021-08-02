@@ -28,11 +28,15 @@ use App\Form\SocieteBanqueChoiceType;
 use App\Form\SocieteChoiceType;
 use App\Repository\MyContacts\PersonneRepository;
 use App\Repository\MyContacts\SocieteRepository;
+use App\Repository\MyContrats\ContratFacturationRepository;
+use App\Repository\MyContrats\ContratRepository;
 use App\Repository\MyFinances\CreditRepository;
 use App\Repository\MyFinances\ModePaiementRepository;
 use App\Repository\MyFinances\OperationRepository;
 use App\Repository\MyFinances\SousCategorieRepository;
 use App\Repository\MyFinances\CompteRepository;
+use App\Repository\MyFinances\EcheanceOperationRepository;
+use App\Repository\MyFinances\EcheanceRepository;
 use App\Repository\MyFinances\PositionOrdreRepository;
 use App\Repository\MyFinances\PositionRepository;
 use App\Repository\MyFinances\TypeCompteRepository;
@@ -53,6 +57,154 @@ class MyTresorerieController extends AbstractController
             'comptes' => $comptes,
             'typesCompte' => $typesCompte
         ]);
+    }
+
+    /**
+     * @Route("/tresorerie/moulinette", name="app_myTresorerie_moulinette")
+     */
+    public function mytresorerie_moulinette(EntityManagerInterface $em, EcheanceRepository $echeanceRepo, EcheanceOperationRepository $echeanceOperationRepo,OperationRepository $OperationRepo, ContratFacturationRepository $contratFacturationRepo): Response
+    {
+        // La période définie sera toujours le mois en cours (la date de fin est au 1er jour du mois suivantà 0h00 donc à exclure dans les requêtes)
+        $dateDebutPeriode = new DateTime('midnight first day of this month');
+        $dateFinPeriode = new DateTime('midnight first day of next month');
+        
+        // On va commencer dans un premier temps pour parcourir les écheances actives et archiver celles dont 
+        // un nombre d'échéance est défini à l'avance ou une date de fin existe et est dépassée
+        $echeanceDepassees = $echeanceRepo->findActifsByDateFin($dateDebutPeriode);
+        if (count($echeanceDepassees) > 0) {
+            for($i = 0 ; $i < count($echeanceDepassees); $i++) {
+                $echeanceDepassees[$i]->setEstSolde(true);
+                // On vérifie que l'échéance ne fait pas parti d'un contrat défini sinon, on va procéder à l'archivage de celui-ci également
+                $contratFacturation = $contratFacturationRepo->findContratFacturationByEcheance($echeanceDepassees[$i]);
+                if ($contratFacturation) {
+                    $contratFacturation->setEstArchive(true);
+                   $em->persist($contratFacturation);
+                }
+                $em->persist($echeanceDepassees[$i]);
+                $em->flush();
+            }
+        }
+
+        
+        // On va maintenant gérer la particularité des échéances multiples sur paiement x2, x3 x4 par exemple ou il n'existe pas de dates de fin, mais qui sont échus
+        $echeanceDepassees = $echeanceRepo->findActifsDateFinNull();
+        if (count($echeanceDepassees) > 0) {
+            for($i = 0 ; $i < count($echeanceDepassees); $i++) {
+                if ($echeanceDepassees[$i]->getDateEcheanceOne() < $dateFinPeriode) {
+                    $echeanceOperationCours = $echeanceOperationRepo->findOperationByEcheanceDateDebut($echeanceDepassees[$i],$dateDebutPeriode);
+                    if (count($echeanceOperationCours) == 0) {
+                        $echeanceDepassees[$i]->setEstSolde(true);
+                        // On vérifie que l'échéance ne fait pas parti d'un contrat défini sinon, on va procéder à l'archivage de celui-ci également
+                        $contratFacturation = $contratFacturationRepo->findContratFacturationByEcheance($echeanceDepassees[$i]);
+                        if ($contratFacturation) {
+                            $contratFacturation->setEstArchive(true);
+                            $em->persist($contratFacturation);
+                        }
+                        $em->persist($echeanceDepassees[$i]);
+                        $em->flush();
+                    }
+                }
+            }
+        }
+
+        // On va calculer les échéances à cet écran pour les intégrer si besoin et ne pas avoir à les recharger ensuite durant la navigation, les nouveaux contrats/échéances étant calculés à la création
+        // On va traiter dans un premier temps les échéances permanentes pour créer les EcheancesOperations/Operations correspondantes
+        $echeancesCours = $echeanceRepo->findActifsPeriode($dateDebutPeriode,$dateFinPeriode);
+        if (count($echeancesCours)) {
+            for ($i = 0; $i < count($echeancesCours); $i++) {
+                // On va d'abord gérer les échéanciers à nombres définis dont l'EcheanceOperation a déjà été créée lors de la création de l'échéance
+                if ( $echeancesCours[$i]->getNombreEcheances() > 0 ) {
+                    $echeanceOperation = $echeanceOperationRepo->findOperationByEcheancePeriode($echeancesCours[$i],$dateDebutPeriode,$dateFinPeriode);
+                    // Attention, il peut y avoir plusieurs échéances sur un même mois, donc nous allons procéder à une analyse en boucle
+                    if (count($echeanceOperation) > 0) {
+                        for($y = 0 ; $y < count($echeanceOperation); $y++) {
+                            // On va vérifier que l'EcheanceOperation n'a pas déjà été généré en tant qu'Operation
+                            $operationCours = $OperationRepo->findOperationAllByEcheanceOperation($echeanceOperation[$y]);
+                            if (count($operationCours) == 0) {
+                                $operation = new Operation;
+                                switch ($echeanceOperation[$y]->getEcheance()->getTypeOperation()) {
+                                    case 'CRE':
+                                        $operation->setCreditFromEcheanceOperation($echeanceOperation);
+                                        $em->persist($operation);
+                                        $em->flush();
+                                        break;
+                                    case 'DEB':
+                                        $operation->setDebitFromEcheanceOperation($echeanceOperation[$y]);
+                                        $em->persist($operation);
+                                        $em->flush();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+                // On va gérer les échéances permanentes ou il est nécessaire dans ce cas de générer une EcheanceOperation ainsi que l'opération correspondant
+                else {
+                    // On va s'assurer qu'une EcheanceOperation n'a été créée sur le mois
+                    $echeanceOperation = $echeanceOperationRepo->findOperationByEcheancePeriode($echeancesCours[$i],$dateDebutPeriode,$dateFinPeriode);
+                    if (count($echeanceOperation) == 0) {
+                        $echeancesCours[$i]->calculNombreEcheanceOperation();
+                        $echeancesCours[$i]->calculTableEcheanceOperation();
+                        // On va pouvoir créer les entrées EcheanceOperation et Operation
+                        if (count($echeancesCours[$i]->getTabEcheanceOperations()) > 0) {
+                            for ($y = 1 ; $y <= count($echeancesCours[$i]->getTabEcheanceOperations()) ; $y++) {
+                                if ($echeancesCours[$i]->getTabEcheanceOperations()[$y]->getDateEcheance() >= $dateDebutPeriode && $echeancesCours[$i]->getTabEcheanceOperations()[$y]->getDateEcheance() <= $dateFinPeriode) {
+                                    $operation = new Operation;
+                                    switch ($echeancesCours[$i]->getTabEcheanceOperations()[$y]->getEcheance()->getTypeOperation()) {
+                                        case 'CRE':
+                                            $em->persist($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                                            $em->flush();
+
+                                            $operation->setCreditFromEcheanceOperation($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                                            $em->persist($operation);
+                                            $em->flush();
+                                            break;
+                                        case 'DEB':
+                                            $em->persist($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                                            $em->flush();
+
+                                            $operation->setDebitFromEcheanceOperation($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                                            $em->persist($operation);
+                                            $em->flush();
+                                            break;
+                                        case 'VII':
+                                            $timestamp = time() + $y;
+                    
+                                            $echeanceOperationDebit = $echeancesCours[$i]->getTabEcheanceOperations()[$y];
+
+                                            $echeanceOperationCredit = clone($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+
+                                            $em->persist($echeanceOperationCredit);
+                                            $em->persist($echeanceOperationDebit);
+                                            $em->flush();
+    
+                                            $operationDebit = new Operation;
+                                            $operationDebit->setDebitFromEcheanceOperation($echeanceOperationDebit);
+                                            $operationDebit->setTypeOperation('VII');
+                                            $operationDebit->setVirementID($timestamp);
+                                            $operationDebit->setCompteVirementInterne($echeancesCours[$i]->getCompteDestinataireVirement());
+                                            
+                                            $operationCredit = new Operation;
+                                            $operationCredit->setCreditFromEcheanceOperation($echeanceOperationCredit);
+                                            $operationCredit->setCompte($echeancesCours[$i]->getCompteDestinataireVirement());
+                                            $operationCredit->setCompteVirementInterne($echeancesCours[$i]->getCompte());
+                                            $operationCredit->setTypeOperation('VII');
+                                            $operationCredit->setVirementID($timestamp);
+
+                                            $em->persist($operationDebit);
+                                            $em->persist($operationCredit);
+                                            $em->flush();
+                                            break;
+                                    }
+                                }                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this->redirectToRoute('app_myTresorerie_index');        
     }
 
     /**
