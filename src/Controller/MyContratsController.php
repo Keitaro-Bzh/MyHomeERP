@@ -47,11 +47,9 @@ class MyContratsController extends AbstractController
      */
     public function app_myContrats_contrat_add(?int $id, SocieteRepository $societeRepo, SousCategorieRepository $sousCategorieRepo, Request $requete, EntityManagerInterface $em, ContratRepository $contratRepo): Response
     {
-
         $contrat = new Contrat();
         if (isset($id)) {
             $contrat = $contratRepo->find($id);
-           
         }
 
         $form = $this->createFormBuilder($contrat)      
@@ -129,7 +127,7 @@ class MyContratsController extends AbstractController
         ]);
     }
 
-        /**
+    /**
      * @Route("/contrats/{id}/facturation/add", name="app_myContrats_facturation_form")
      */
     public function app_myContrats_facturation_form(int $id,CompteRepository $compteRepo, ContratFacturationRepository $contratFacturationRepo, SocieteRepository $societeRepo, SousCategorieRepository $sousCategorieRepo, Request $requete, EntityManagerInterface $em, ContratRepository $contratRepo): Response
@@ -214,6 +212,10 @@ class MyContratsController extends AbstractController
                 // les relations entre les tables avant l'enregistrement de notre entité
                 $echeance = new Echeance;
                 $echeance->setEcheanceFromContratOperation($contratFacturation);
+
+                
+                $echeance->calculNombreEcheanceOperation();
+                $echeance->calculTableEcheanceOperation();
 
                 $em->persist($echeance);
                 $em->flush();

@@ -46,7 +46,7 @@ class Position
     /**
      * @ORM\OneToMany(targetEntity=PositionOrdre::class, mappedBy="Position", orphanRemoval=true)
      */
-    private $positionOrdres;
+    private $PositionOrdres;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -61,7 +61,7 @@ class Position
 
     public function __construct()
     {
-        $this->positionOrdres = new ArrayCollection();
+        $this->PositionOrdres = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -106,29 +106,29 @@ class Position
     }
 
     /**
-     * @return Collection|PositionOrdre[]
+     * @return Collection|PositionOrdres[]
      */
     public function getPositionOrdres(): Collection
     {
-        return $this->positionOrdres;
+        return $this->PositionOrdres;
     }
 
-    public function addPositionOrdre(PositionOrdre $positionOrdre): self
+    public function addPositionOrdre(PositionOrdre $PositionOrdre): self
     {
-        if (!$this->positionOrdres->contains($positionOrdre)) {
-            $this->positionOrdres[] = $positionOrdre;
-            $positionOrdre->setPosition($this);
+        if (!$this->PositionOrdres->contains($PositionOrdre)) {
+            $this->PositionOrdres[] = $PositionOrdre;
+            $PositionOrdre->setPosition($this);
         }
 
         return $this;
     }
 
-    public function removePositionOrdre(PositionOrdre $positionOrdre): self
+    public function removePositionOrdre(PositionOrdre $PositionOrdre): self
     {
-        if ($this->positionOrdres->removeElement($positionOrdre)) {
+        if ($this->PositionOrdres->removeElement($PositionOrdre)) {
             // set the owning side to null (unless already changed)
-            if ($positionOrdre->getPosition() === $this) {
-                $positionOrdre->setPosition(null);
+            if ($PositionOrdre->getPosition() === $this) {
+                $PositionOrdre->setPosition(null);
             }
         }
 

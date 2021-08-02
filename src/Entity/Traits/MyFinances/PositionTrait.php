@@ -26,10 +26,14 @@ trait PositionTrait
 
         if (count($ordres) > 0) {
             for ($i = 0; $i < count($ordres); $i++) {
-                $nbActions = $nbActions + $ordres[$i]->getNombreTitres();
+                if ($ordres[$i]->getTypeMouvement() == 'A') {
+                    $nbActions = $nbActions + $ordres[$i]->getNombreTitres();
+                }
+                else {
+                    $nbActions = $nbActions - $ordres[$i]->getNombreTitres();
+                }
             }
         }
-
         $this->setNombreActions($nbActions);
         
         return $this->nombreActions;
@@ -75,7 +79,12 @@ trait PositionTrait
 
         if (count($ordres) > 0) {
             for ($i = 0; $i < count($ordres); $i++) {
-                $montantTotal = $montantTotal + ($ordres[$i]->getNombreTitres() * $ordres[$i]->getValeurTitre() + $ordres[$i]->getFrais() + $ordres[$i]->getTaxe());
+                if ($ordres[$i]->getTypeMouvement() == 'A') {
+                    $montantTotal = $montantTotal + ($ordres[$i]->getNombreTitres() * $ordres[$i]->getValeurTitre() + $ordres[$i]->getFrais() + $ordres[$i]->getTaxe());
+                }
+                else {
+                    $montantTotal = $montantTotal - ($ordres[$i]->getNombreTitres() * $ordres[$i]->getValeurTitre() + $ordres[$i]->getFrais() + $ordres[$i]->getTaxe());
+                }
             }
         }
         
@@ -96,7 +105,7 @@ trait PositionTrait
         return $this->montantCours;
     }
 
-    public function setMontantCuors(?string $montantCours): self
+    public function setMontantCours(?string $montantCours): self
     {
         $this->montantCours = $montantCours;
 

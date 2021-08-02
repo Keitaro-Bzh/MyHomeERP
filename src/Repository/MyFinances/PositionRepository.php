@@ -19,6 +19,19 @@ class PositionRepository extends ServiceEntityRepository
         parent::__construct($registry, Position::class);
     }
 
+    public function findActifByCompte($compte)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.est_solde is null')
+            ->orWhere('c.est_solde = 0')
+            ->andWhere('c.Compte = :compte')
+            ->setParameter('compte', $compte)
+            ->orderBy('c.position', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Position[] Returns an array of Position objects
     //  */

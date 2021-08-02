@@ -71,6 +71,7 @@ class MyTresorerieController extends AbstractController
         // On va commencer dans un premier temps pour parcourir les écheances actives et archiver celles dont 
         // un nombre d'échéance est défini à l'avance ou une date de fin existe et est dépassée
         $echeanceDepassees = $echeanceRepo->findActifsByDateFin($dateDebutPeriode);
+        
         if (count($echeanceDepassees) > 0) {
             for($i = 0 ; $i < count($echeanceDepassees); $i++) {
                 $echeanceDepassees[$i]->setEstSolde(true);
@@ -124,12 +125,40 @@ class MyTresorerieController extends AbstractController
                                 $operation = new Operation;
                                 switch ($echeanceOperation[$y]->getEcheance()->getTypeOperation()) {
                                     case 'CRE':
-                                        $operation->setCreditFromEcheanceOperation($echeanceOperation);
+                                        $operation->setCreditFromEcheanceOperation($echeanceOperation[$y]);
                                         $em->persist($operation);
                                         $em->flush();
                                         break;
                                     case 'DEB':
                                         $operation->setDebitFromEcheanceOperation($echeanceOperation[$y]);
+                                        $em->persist($operation);
+                                        $em->flush();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        // Cette portion de code va permettre de regénérer un tableau d'échéance dans le cas ou il n'aurait pas été généré correctement 
+                        // lors de la génération d'une periode de facturation sur un contrat.
+                        $echeancesCours[$i]->calculNombreEcheanceOperation();
+                        $echeancesCours[$i]->calculTableEcheanceOperation();
+
+                        for($y = 1 ; $y <= count($echeancesCours[$i]->getTabEcheanceOperations()) ; $y++) {
+                            $em->persist($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                            $em->flush();
+
+                            // On ne va créer une opération que pour la période en cours
+                            if ($echeancesCours[$i]->getTabEcheanceOperations()[$y]->getDateEcheance() >= $dateDebutPeriode && $echeancesCours[$i]->getTabEcheanceOperations()[$y]->getDateEcheance() < $dateFinPeriode) {
+                                $operation = new Operation;
+                                switch ($echeancesCours[$i]->getTypeOperation()) {
+                                    case 'CRE':
+                                        $operation->setCreditFromEcheanceOperation($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
+                                        $em->persist($operation);
+                                        $em->flush();
+                                        break;
+                                    case 'DEB':
+                                        $operation->setDebitFromEcheanceOperation($echeancesCours[$i]->getTabEcheanceOperations()[$y]);
                                         $em->persist($operation);
                                         $em->flush();
                                         break;
@@ -224,10 +253,11 @@ class MyTresorerieController extends AbstractController
                 'operationsRapprochees' => $operationRepo->findOperationsRapprochees($compte),
             ]);
         } elseif ($compte->getTypeCompte() == 3) {
+           // dd($positionRepo->findAll());
             return $this->render('default/backend/myTresorerie/compte_releve_titre.html.twig', [
                 'controller_name' => 'MyTresorerieController',
                 'compte' => $compte,
-                'positions' => $positionRepo->findAll(),
+                'positions' => $positionRepo->findActifByCompte($compte),
                 'operations' => $operationRepo->findOperationsRapprochees($compte),
             ]);
         } else {
@@ -235,7 +265,6 @@ class MyTresorerieController extends AbstractController
         }
 
     }
-
     
     /**
      * @Route("/tresorerie/operation/credit", name="app_myTresorerie_operation_credit")
@@ -376,23 +405,29 @@ class MyTresorerieController extends AbstractController
 
     /**
      * @Route("/tresorerie/compte/{idCompte}/titre", name="app_myTresorerie_compte_operation_titre_add")
+     * @Route("/tresorerie/compte/{idCompte}/titre/{id}", name="app_myTresorerie_compte_operation_titre_edit")
      */
-    public function mytresorerie_operation_titre(?int $idCompte,PositionOrdreRepository $PositionOrdreRepo,CompteRepository $compteRepo, SousCategorieRepository $sousCategorieRepo, SocieteRepository $societeRepo, Request $requete,EntityManagerInterface $em): Response
+    public function mytresorerie_operation_titre(?int $idCompte,?int $id,PositionRepository $positionRepo, PositionOrdreRepository $PositionOrdreRepo,CompteRepository $compteRepo, SousCategorieRepository $sousCategorieRepo, SocieteRepository $societeRepo, Request $requete,EntityManagerInterface $em): Response
     {
         $PositionOrdre = new PositionOrdre();
         $compte = $compteRepo->find($idCompte);
+
+        if ($id) {
+            $PositionOrdrePere = $positionRepo->find($id);
+        }
  
         $form = $this->createFormBuilder($PositionOrdre)
             ->add('societeID',SocieteChoiceType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
-                'data' => $PositionOrdre->getPosition() ?  $PositionOrdre->getPosition()->getSociete()->getId() : "-1"
+                'data' => isset($PositionOrdrePere) ? $PositionOrdrePere->getSociete()->getId() : "-1"
             ])
             ->add('PositionSocieteAbrege', TextType::class, [
                 'mapped' => false,
                 'attr' => ['class' => 'form-control'],
-                'required' => false
+                'required' => false,
+                'data' => isset($PositionOrdrePere) ? $PositionOrdrePere->getAbregeSociete() : null
             ])
             ->add('typeMouvement', ChoiceType::class, array(
                 'multiple' => false,
@@ -410,6 +445,7 @@ class MyTresorerieController extends AbstractController
                     'Comptant' => 'C',
                     'SRD' => 'S'
                 ),
+                'data' => isset($PositionOrdrePere) ? $PositionOrdrePere->getPosition() : 'C'
             ))
             ->add('date', DateType::class, [
                 'widget' => 'single_text',
@@ -440,44 +476,83 @@ class MyTresorerieController extends AbstractController
             ->add('frais', NumberType::class, [
                 'attr' => ['class' => 'form-control'],
             ])
-            // ->add('est_pointe', CheckboxType::class, [
-            //     'attr' => ['data-plugin-ios-switch' => 'data-plugin-ios-switch'],
-            //     'required' => false
-            // ])
             ->getform()
         ;
 
         $form->handleRequest($requete);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // On va d'abord créer la position
-            $position = new Position();
-            $position->setCompte($compte);
-            $position->setSociete($societeRepo->find($requete->request->get('form')['societeID']));
-            $position->setPosition($requete->request->get('form')['TypePosition']);
-            $position->setAbregeSociete($requete->request->get('form')['PositionSocieteAbrege']);
+            $saisieValide = false;
 
-            $em->persist($position);
-            $em->flush();
+            if (isset($PositionOrdrePere)) {
+                // On va procéder que la quantité saisie
+                if ($requete->request->get('form')['typeMouvement'] == 'V') {
+                    $nbActionsFormulaire = -1 * $requete->request->get('form')['nombre_titres'];
+                }
+                else {
+                    $nbActionsFormulaire = $requete->request->get('form')['nombre_titres'];
+                }
+                if ($PositionOrdrePere->getNombreActions() + $nbActionsFormulaire >= 0) {
+                    // On va solder la position si le nombre d'action est à 0
+                    if ($PositionOrdrePere->getNombreActions() + $nbActionsFormulaire == 0) {
+                        $PositionOrdrePere->setEstSolde(true);
 
-            // On enregistre ensuite l'ordre
-            $PositionOrdre->setPosition($position);
+                        $em->persist($PositionOrdrePere);
+                        $em->flush();
+                    }
 
-            $em->persist($PositionOrdre);
-            $em->flush();
 
-            // On crée enfin l'opération uniquement pour les opérations comptats
-            // Le réglement SRD sera fait en fin de mois
-            if ($position->getPosition() == 'C') {
-                $sousCategorie = $sousCategorieRepo->find($requete->request->get('form')['categorieID']);
-                $operation = new Operation();
-                $operation->setOperationFromPositionOrdre($PositionOrdre, $sousCategorie);
+                    $PositionOrdre->setPosition($PositionOrdrePere);
+                    $position = $PositionOrdrePere;
 
-                $em->persist($operation);
-                $em->flush();
+                    $saisieValide = true;
+                }
+                else {
+                    $messageErreur = "Le nombre d'actions de l'ordre ne peut dépasser celui de la position";
+                }
+
             }
-            
-            $this->addFlash("userUpdate", "Ajout Ordre effectué");
+            else {
+                if ($requete->request->get('form')['TypePosition'] == 'C' && $requete->request->get('form')['typeMouvement'] == 'V') {
+                    $messageErreur = "Le passage d'un ordre en position comptant ne peut se faire en vente à découvert";
+                }
+                else {
+                $saisieValide = true;
+
+                    $position = new Position();
+                    $position->setCompte($compte);
+                    $position->setSociete($societeRepo->find($requete->request->get('form')['societeID']));
+                    $position->setPosition($requete->request->get('form')['TypePosition']);
+                    $position->setAbregeSociete($requete->request->get('form')['PositionSocieteAbrege']);
+        
+                    $em->persist($position);
+                    $em->flush();
+
+                    $PositionOrdre->setPosition($position);
+                }
+            }
+
+            if ($saisieValide) {
+                // On enregistre ensuite l'ordre
+                $em->persist($PositionOrdre);
+                $em->flush();
+
+                // On crée enfin l'opération uniquement pour les opérations au comptant
+                // Le réglement SRD sera fait en fin de mois
+                if ($position->getPosition() == 'C') {
+                    $sousCategorie = $sousCategorieRepo->find($requete->request->get('form')['categorieID']);
+                    $operation = new Operation();
+                    $operation->setOperationFromPositionOrdre($PositionOrdre, $sousCategorie);
+
+                    $em->persist($operation);
+                    $em->flush();
+                }
+                
+                $this->addFlash("successMSG", "Ajout Ordre effectué");
+            }
+            else {
+                $this->addFlash("errorMSG", "L'ordre n'a pu être ajouté : " . $messageErreur);
+            }
             return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $compte->getId()]);
         
         }
@@ -1061,4 +1136,22 @@ class MyTresorerieController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/tresorerie/position/delete/{id}", name="app_myTresorerie_position_del", methods ="DELETE")
+     */
+    public function mytresorerie_position_delete(Position $position, Request $requete, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('position_supprime_' . $position->getId(), $requete->request->get('csrf_token'))) {
+            $CompteID = $position->getCompte()->getId();
+
+            $em->remove($position);
+            $em->flush();            
+            $this->addFlash("successMSG", "Position supprimée");
+
+            return $this->redirectToRoute('app_myTresorerie_compte_releve', [ 'id' => $CompteID]);
+        }
+        else {
+            return $this->redirectToRoute('app_hacking');
+        }
+    }
 }

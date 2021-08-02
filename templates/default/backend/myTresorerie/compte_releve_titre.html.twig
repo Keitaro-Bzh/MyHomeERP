@@ -14,10 +14,10 @@
         </header>
         <div class="panel-body">
             {% for flashMSG in app.flashes('errorMSG') %}
-                <div class="alert alert-info" role="alert">{{ flashMSG }}</div>
+                <div class="alert alert-danger" role="alert">{{ flashMSG }}</div>
             {% endfor %}
             {% for flashMSG in app.flashes('successMSG') %}
-                <div class="alert alert-info" role="alert">{{ flashMSG }}</div>
+                <div class="alert alert-success" role="alert">{{ flashMSG }}</div>
             {% endfor %}
             <div class="col-md-10">
                 <div class="tabs">

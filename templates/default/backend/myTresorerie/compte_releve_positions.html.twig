@@ -12,39 +12,60 @@
                     <th class="text-center col-md-4">Titre</th>
                     <th class="text-center col-md-1">Nombre</th>
                     <th class="text-center col-md-1">PRU</th>
-                    <th class="text-center col-md-2">Montant achat</th>
+                    <th class="text-center col-md-1">Montant achat</th>
                     <th class="text-center col-md-2">Montant en cours</th>
                     <th class="text-center col-md-1">+/- Value</th>
-                    <th class="text-center col-md-1">Ordre</th>
+                    <th class="text-center col-md-1">Options</th>
                 </tr>
             </thead>
             <tbody>
                 {% for position in positions %}
-                    <tr>
-                        <td class="text-center">
-                            [{% if position.position == 'C'%}Comptant{% else %}SRD{% endif %}]
-                            <strong>{{ position.societe.nom }}</strong> 
-                        </td>
-                        <td class="text-center">
-                            {{ position.nombreActions }}
-                        </td>
-                        <td class="text-center">
-                            {{ position.pru }} €
-                        </td>
-                        <td class="text-right">
-                            {{ position.MontantAchat }} €
-                        </td>
-                        <td class="text-center">
-                          
-                        </td>
-                        <td class="text-center">
-                          
-                        </td>
-                        <td class="text-center">
-                            <strong><span class='text-danger'>A</span> <span class='text-success'>V</span></strong>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td class="text-center">
+                                [{% if position.position == 'C'%}Comptant{% else %}SRD{% endif %}]
+                                <strong>{{ position.societe.nom }}</strong> 
+                            </td>
+                            <td class="text-center">
+                                {{ position.nombreActions }}
+                            </td>
+                            <td class="text-center">
+                                {{ position.pru }} €
+                            </td>
+                            <td class="text-right">
+                                {{ position.MontantAchat }} €
+                            </td>
+                            <td class="text-center">
+                            
+                            </td>
+                            <td class="text-center">
+                            
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ path ('app_myTresorerie_compte_operation_titre_edit' , { 'id' : position.id, 'idCompte' : position.Compte.id }) }}" title="Nouvel ordre" ><i class="fa fa-plus"></i></a>
+                                <a class="modal-basic" title="Supprimer" href="#modalBasicPosition{{ position.id }}"><i class="fa fa-trash-o"></i></a>
+                            </td>
+                        </tr>
 
+                        {# Fenetre modèle pour valider la suppression d'une position #}
+                        <div id="modalBasicPosition{{ position.id }}" class="modal-block modal-block-primary mfp-hide">
+                            <section class="panel">
+                                <header class="panel-heading">
+                                    <h2 class="panel-title">Etes-vous sur de vouloir supprimer cette position?</h2>
+                                </header>
+                                <footer class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-md-12 text-right">
+                                            <button class="btn btn-warning btn-sm modal-dismiss">ANNULER</button>
+                                            <button class="on-default btn btn-success btn-sm remove-row" onclick="document.getElementById('js-position-effacer-{{position.id}}').submit();">CONFIRMER</button>
+                                            <form id="js-position-effacer-{{position.id}}"  action="{{ path('app_myTresorerie_position_del', { 'id' : position.id }) }}" method="post" style="display:none;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('position_supprime_' ~ position.id) }}">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </footer>
+                            </section>
+                        </div>
                 {% endfor %}
             </tbody>
         </table>

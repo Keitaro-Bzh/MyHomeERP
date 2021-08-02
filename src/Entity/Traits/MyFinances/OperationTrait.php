@@ -54,12 +54,12 @@ trait OperationTrait
         $this->setDescription($PositionOrdre->getNombreTitres() . ' actions à ' . $PositionOrdre->getValeurTitre() . ' €');
         $this->setTypeTiers('S');
         $this->setSociete($PositionOrdre->getPosition()->getSociete());
-        if ($PositionOrdre->getTypeMouvement() == 'D') {
+        if ($PositionOrdre->getTypeMouvement() == 'A') {
             $this->setTypeOperation('DEB');
             $this->setDebit(($PositionOrdre->getValeurTitre() * $PositionOrdre->getNombreTitres()) + $PositionOrdre->getFrais() + $PositionOrdre->getTaxe());
         }
         else {
-            $this->setTypeOperation('CRE');$this->setTypeOperation('DEB');
+            $this->setTypeOperation('CRE');
             $this->setCredit(($PositionOrdre->getValeurTitre() * $PositionOrdre->getNombreTitres()) + $PositionOrdre->getFrais() + $PositionOrdre->getTaxe());
         }
         $this->setCategorie($sousCategorie);
